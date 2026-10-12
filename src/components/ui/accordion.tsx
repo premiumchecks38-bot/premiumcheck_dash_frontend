@@ -28,7 +28,7 @@ export const AccordionTrigger = React.forwardRef<
     <RadixAccordion.Trigger
       ref={ref}
       className={cn(
-        "flex min-h-touch flex-1 items-center justify-between py-4 text-left font-heading text-body font-semibold text-text transition-all",
+        "flex min-h-touch flex-1 cursor-pointer items-center justify-between py-4 text-left font-heading text-body font-semibold text-text transition-all",
         "focus-visible:outline-focus focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
         "[&[data-state=open]>svg]:rotate-180",
         variant === "faq" && "group gap-4 px-5 text-white data-[state=open]:text-primary",

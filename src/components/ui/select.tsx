@@ -22,7 +22,7 @@ export const SelectTrigger = React.forwardRef<
   <RadixSelect.Trigger
     ref={ref}
     className={cn(
-      "flex min-h-touch w-full items-center justify-between rounded-md border-thin border-border bg-background px-3.5 py-2 font-body text-body text-text shadow-sm transition-colors",
+      "flex min-h-touch w-full cursor-pointer items-center justify-between rounded-md border-thin border-border bg-background px-3.5 py-2 font-body text-body text-text shadow-sm transition-colors",
       "placeholder:text-text-subtle",
       "focus-visible:outline-focus focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
       "disabled:cursor-not-allowed disabled:bg-surface disabled:opacity-50",
@@ -45,7 +45,7 @@ export const SelectScrollUpButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <RadixSelect.ScrollUpButton
     ref={ref}
-    className={cn("flex cursor-default items-center justify-center py-1", className)}
+    className={cn("flex cursor-pointer items-center justify-center py-1", className)}
     {...props}
   >
     <ChevronUp className="h-4 w-4" aria-hidden="true" />
@@ -59,7 +59,7 @@ export const SelectScrollDownButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <RadixSelect.ScrollDownButton
     ref={ref}
-    className={cn("flex cursor-default items-center justify-center py-1", className)}
+    className={cn("flex cursor-pointer items-center justify-center py-1", className)}
     {...props}
   >
     <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -118,7 +118,7 @@ export const SelectItem = React.forwardRef<
   <RadixSelect.Item
     ref={ref}
     className={cn(
-      "relative flex min-h-touch w-full cursor-default items-center rounded-sm py-2 pr-8 pl-3 font-body text-body outline-none select-none focus:bg-surface focus:text-text data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex min-h-touch w-full cursor-pointer items-center rounded-sm py-2 pr-8 pl-3 font-body text-body outline-none select-none focus:bg-surface focus:text-text data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
     {...props}

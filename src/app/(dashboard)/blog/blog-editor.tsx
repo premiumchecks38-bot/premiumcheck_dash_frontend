@@ -57,6 +57,9 @@ export function BlogEditor({ postId }: { postId?: string }) {
   const [featuredImage, setFeaturedImage] = React.useState<ImageValue | null>(null);
   const [content, setContent] = React.useState<unknown>(null);
   const [seoValues, setSeoValues] = React.useState<SeoValues>(seoValuesOf(null));
+  const [dirty, setDirty] = React.useState(isNew);
+
+  useUnsavedChanges(dirty);
 
   // Autosave state
   const [autosaveState, setAutosaveState] = React.useState<AutosaveState>("idle");
@@ -80,8 +83,11 @@ export function BlogEditor({ postId }: { postId?: string }) {
           url: p.featured_image.urls.thumb,
           alt: p.featured_image.alt_text,
         });
+      } else {
+        setFeaturedImage(null);
       }
       setLastSaved(p.updated_at);
+      setDirty(false);
     }
   }, [postQuery.data]);
 
@@ -181,9 +187,12 @@ export function BlogEditor({ postId }: { postId?: string }) {
       }
 
       return saved;
-    }, isNew ? "Article created." : "Draft saved.");
+    }, isNew ? "Article created." : status === "published" ? "Changes saved." : "Draft saved.");
 
     if (res) {
+      setDirty(false);
+      setLastSaved(new Date().toISOString());
+      setAutosaveState("saved");
       await queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
       if (isNew) {
         router.push(`/blog/${res.id}` as Route);
@@ -197,6 +206,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
     if (isNew) {
       await handleSaveDraft();
       return;
+    }
+
+    if (dirty) {
+      await handleSaveDraft();
     }
 
     await save.run(async () => {
@@ -271,7 +284,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
             label="Article title"
             required
             value={title}
-            onChange={setTitle}
+            onChange={(v) => {
+              setTitle(v);
+              setDirty(true);
+            }}
             maxLength={300}
             disabled={!canEdit}
             testId="post-title"
@@ -280,7 +296,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
           <SlugField
             id="post-slug"
             value={slug}
-            onChange={setSlug}
+            onChange={(v) => {
+              setSlug(v);
+              setDirty(true);
+            }}
             title={title}
             prefix={prefix}
             savedSlug={post?.slug ?? null}
@@ -293,7 +312,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
             multiline
             rows={2}
             value={excerpt}
-            onChange={setExcerpt}
+            onChange={(v) => {
+              setExcerpt(v);
+              setDirty(true);
+            }}
             maxLength={500}
             disabled={!canEdit}
           />
@@ -305,7 +327,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
               label="Article content"
               output="json"
               value={content as any}
-              onChange={setContent}
+              onChange={(v) => {
+                setContent(v);
+                setDirty(true);
+              }}
               folder="blogs"
               readOnly={!canEdit}
             />
@@ -327,7 +352,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
               <SeoFields
                 idPrefix="blog-seo"
                 values={seoValues}
-                onChange={setSeoValues}
+                onChange={(v) => {
+                  setSeoValues(v);
+                  setDirty(true);
+                }}
                 path={`${prefix}${slug || "new"}`}
                 fallbackTitle={title || "Article"}
                 fallbackDescription={excerpt}
@@ -347,7 +375,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
               label="Compliance hub guide"
               hint="Changes URL from /blog/ to /compliance-hub/"
               checked={isComplianceHub}
-              onChange={setIsComplianceHub}
+              onChange={(v) => {
+                setIsComplianceHub(v);
+                setDirty(true);
+              }}
               disabled={!canEdit}
             />
 
@@ -355,7 +386,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
               id="post-category"
               label="Category"
               value={categoryId}
-              onChange={setCategoryId}
+              onChange={(v) => {
+                setCategoryId(v);
+                setDirty(true);
+              }}
               options={categoryOptions}
               placeholder="Uncategorised"
               disabled={!canEdit}
@@ -365,7 +399,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
               id="post-author"
               label="Author name"
               value={authorName}
-              onChange={setAuthorName}
+              onChange={(v) => {
+                setAuthorName(v);
+                setDirty(true);
+              }}
               disabled={!canEdit}
             />
 
@@ -374,7 +411,10 @@ export function BlogEditor({ postId }: { postId?: string }) {
               label="Featured image"
               folder="blogs"
               value={featuredImage}
-              onChange={setFeaturedImage}
+              onChange={(v) => {
+                setFeaturedImage(v);
+                setDirty(true);
+              }}
               disabled={!canEdit}
               testId="post-featured-image"
             />
@@ -405,7 +445,7 @@ export function BlogEditor({ postId }: { postId?: string }) {
         publishedAt={post?.published_at}
         lastSaved={lastSaved}
         autosave={autosaveState}
-        dirty={false}
+        dirty={dirty}
         busy={save.busy}
         canEdit={canEdit}
         previewUrl={post?.slug ? websiteUrl(`${prefix}${post.slug}`) : null}

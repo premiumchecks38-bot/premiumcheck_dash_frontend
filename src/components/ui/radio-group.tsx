@@ -28,7 +28,7 @@ export const RadioGroupItem = React.forwardRef<
       <RadixRadioGroup.Item
         ref={ref}
         className={cn(
-          "aspect-square h-5 w-5 rounded-full border-thin border-border bg-background shadow-sm transition-colors",
+          "aspect-square h-5 w-5 cursor-pointer rounded-full border-thin border-border bg-background shadow-sm transition-colors",
           "focus-visible:outline-focus focus-visible:outline-offset-2 focus-visible:outline-focus-ring",
           "disabled:cursor-not-allowed disabled:bg-surface disabled:opacity-50",
           "data-[state=checked]:border-primary data-[state=checked]:text-primary",

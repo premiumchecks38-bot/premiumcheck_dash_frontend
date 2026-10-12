@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -37,6 +39,7 @@ import { admin } from "@/lib/client/api";
 import { actionErrorMessage, errorMessage } from "@/lib/client/errors";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
+import { EngineersPanel } from "@/components/dashboard/availability/engineers-panel";
 
 interface AppointmentWindow {
   id: string;
@@ -95,11 +98,21 @@ const WEEKDAYS = [
 ];
 
 export default function AvailabilityPage() {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <AvailabilityPageContent />
+    </Suspense>
+  );
+}
+
+function AvailabilityPageContent() {
   const queryClient = useQueryClient();
   const { canEdit } = usePermission("availability");
   const saveAction = useSave();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") ?? "schedule";
 
-  const [tab, setTab] = React.useState("schedule");
+  const [tab, setTab] = React.useState(initialTab);
   const [gridEdits, setGridEdits] = React.useState<Record<string, number>>({});
   const [blockingDialog, setBlockingDialog] = React.useState<"single" | "range" | null>(null);
   const [unblockId, setUnblockId] = React.useState<string | null>(null);
@@ -228,6 +241,7 @@ export default function AvailabilityPage() {
           <TabsTrigger value="schedule">Weekly schedule</TabsTrigger>
           <TabsTrigger value="blocked">Blocked dates ({blockedDates.length})</TabsTrigger>
           <TabsTrigger value="preview">14-Day preview</TabsTrigger>
+          <TabsTrigger value="engineers">Engineers</TabsTrigger>
         </TabsList>
 
         {/* Weekly Schedule Tab */}
@@ -425,6 +439,11 @@ export default function AvailabilityPage() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* Engineers Tab */}
+        <TabsContent value="engineers" className="space-y-4">
+          <EngineersPanel />
         </TabsContent>
       </Tabs>
 
