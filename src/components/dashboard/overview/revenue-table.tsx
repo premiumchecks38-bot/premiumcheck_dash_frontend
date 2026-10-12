@@ -5,8 +5,8 @@ import { formatDate } from "@/lib/utils/format";
 /** The chart's numbers as a table: always read by screen readers, shown on request for everyone. */
 export function RevenueTable({ daily }: { daily: Schemas["DailyRevenue"][] }) {
   return (
-    <details className="mt-4 font-body text-small">
-      <summary className="inline-flex min-h-touch cursor-pointer items-center font-semibold text-primary underline-offset-4 hover:underline">
+    <details className="mt-4 pt-1 font-body text-small clear-both block">
+      <summary className="inline-flex min-h-touch cursor-pointer items-center font-semibold text-primary underline-offset-4 hover:underline select-none">
         Show the figures as a table
       </summary>
       <div className="mt-2 overflow-x-auto">
