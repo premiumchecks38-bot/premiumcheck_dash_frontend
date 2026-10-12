@@ -14,9 +14,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         >
           {children}
         </main>
-        <p className="mt-6 text-center font-body text-caption text-text-subtle">
-          Staff only. Activity on this dashboard is recorded.
-        </p>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@
   --pc-color-accent-bright: #38bdf8;
   --pc-color-accent-subtle: #f0f9ff;
   --pc-color-accent-subtle-foreground: #0369a1;
+  --pc-color-glow: #e0f2fe;
 }
 
 /*
@@ -321,9 +322,10 @@
 /* Shared service-card treatment. The heading link covers the card; its CTA stays above it. */
 @layer components {
   .service-card {
-    background: linear-gradient(155deg, var(--pc-service-card-wash), var(--pc-color-white) 65%);
-    border-color: var(--pc-color-white);
+    background: var(--pc-color-white);
+    border-color: var(--pc-color-border);
     box-shadow: none;
+    overflow: hidden;
     transition:
       border-color var(--pc-duration-normal),
       box-shadow var(--pc-duration-normal);
@@ -333,19 +335,22 @@
     content: "";
     position: absolute;
     z-index: -1;
-    inset: 0 0 auto;
-    height: 8rem;
+    inset: 0 0 auto 0;
+    height: 9.5rem;
     border-radius: inherit;
     pointer-events: none;
+    background-color: var(--pc-service-card-wash);
     background-image:
       linear-gradient(var(--pc-service-card-grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--pc-service-card-grid) 1px, transparent 1px);
     background-size: 1.125rem 1.125rem;
-    mask-image: radial-gradient(ellipse at 65% 0%, black, transparent 72%);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 160' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L400 0 L400 85 C310 145 210 160 120 115 C65 88 25 98 0 110 Z' fill='black'/%3E%3C/svg%3E");
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
   }
 
   .service-card:hover {
-    border-color: var(--pc-color-border);
+    border-color: var(--pc-color-border-strong);
     box-shadow: var(--pc-shadow-md);
   }
 
@@ -356,19 +361,15 @@
 }
 
 @layer components {
-  /* A curved arrow sweeps from the copy on the left toward the SVG artwork. */
-  .help-cta::before {
+  /* A curved sweep from the copy on the left toward the artwork: clean solid tint, no gradient. */
+  .help-cta::before,
+  .landlords-cta::before {
     content: "";
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: 0;
     pointer-events: none;
-    background: linear-gradient(
-      110deg,
-      color-mix(in srgb, var(--pc-color-accent) 6%, var(--pc-color-white)),
-      var(--pc-color-cream-warm) 48%,
-      color-mix(in srgb, var(--pc-color-accent) 8%, var(--pc-color-white))
-    );
+    background-color: color-mix(in srgb, var(--pc-color-accent) 8%, var(--pc-color-white));
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 400' preserveAspectRatio='none'%3E%3Cpath d='M0 280C180 40 370 20 620 90S1080 230 1300 110L1240 45L1440 135L1280 260L1310 180C1080 310 850 300 610 220S180 160 0 385Z' fill='black'/%3E%3C/svg%3E");
     mask-size: 100% 100%;
     mask-repeat: no-repeat;
