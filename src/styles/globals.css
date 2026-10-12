@@ -1,0 +1,144 @@
+/* The website's tokens, Tailwind theme mapping and base styles (kept identical by design:sync). */
+@import "./shared/globals.css";
+@import "./tokens.dashboard.css";
+
+/* Dashboard only utilities, mapped from tokens.dashboard.css. */
+@theme inline {
+  --spacing-sidebar: var(--pc-dash-sidebar-width);
+  --spacing-sidebar-collapsed: var(--pc-dash-sidebar-collapsed-width);
+  --spacing-topbar: var(--pc-dash-topbar-height);
+  --spacing-row: var(--pc-dash-row-height);
+  --spacing-row-compact: var(--pc-dash-row-height-compact);
+  --spacing-cell-x: var(--pc-dash-cell-x);
+  --spacing-dash-gutter: var(--pc-dash-gutter);
+  --spacing-popover: var(--pc-dash-popover-width);
+  --spacing-chart: var(--pc-dash-chart-height);
+  --spacing-calendar: var(--pc-dash-calendar-min-width);
+  --container-dash: var(--pc-dash-content-max);
+
+  --color-status-positive-bg: var(--pc-dash-status-positive-bg);
+  --color-status-positive-text: var(--pc-dash-status-positive-text);
+  --color-status-negative-bg: var(--pc-dash-status-negative-bg);
+  --color-status-negative-text: var(--pc-dash-status-negative-text);
+  --color-status-pending-bg: var(--pc-dash-status-pending-bg);
+  --color-status-pending-text: var(--pc-dash-status-pending-text);
+  --color-status-info-bg: var(--pc-dash-status-info-bg);
+  --color-status-info-text: var(--pc-dash-status-info-text);
+  --color-status-neutral-bg: var(--pc-dash-status-neutral-bg);
+  --color-status-neutral-text: var(--pc-dash-status-neutral-text);
+}
+
+@layer base {
+  /* Dashboards scroll wide tables and long lists: keep scrollbars visible. */
+  html {
+    scrollbar-width: auto;
+    scroll-padding-top: var(--pc-dash-topbar-height);
+  }
+}
+
+/*
+ * The content editor: close to how the website shows the same content (Prose), scaled down a
+ * step so long articles stay readable while editing. Tokens only.
+ */
+@layer components {
+  .pc-editor-content {
+    font-family: var(--pc-font-body);
+    font-size: var(--pc-text-body);
+    line-height: var(--pc-text-body-lh);
+    color: var(--pc-color-text);
+  }
+  .pc-editor-content > * + * {
+    margin-top: calc(var(--pc-space-unit) * 3);
+  }
+  .pc-editor-content h2 {
+    margin-top: calc(var(--pc-space-unit) * 7);
+    font-family: var(--pc-font-heading);
+    font-size: var(--pc-text-h3);
+    line-height: var(--pc-text-h3-lh);
+    font-weight: 700;
+    color: var(--pc-color-primary);
+  }
+  .pc-editor-content h3 {
+    margin-top: calc(var(--pc-space-unit) * 5);
+    font-family: var(--pc-font-heading);
+    font-size: var(--pc-text-h4);
+    line-height: var(--pc-text-h4-lh);
+    font-weight: 700;
+    color: var(--pc-color-primary);
+  }
+  .pc-editor-content ul {
+    list-style: disc;
+    padding-left: calc(var(--pc-space-unit) * 5);
+  }
+  .pc-editor-content ol {
+    list-style: decimal;
+    padding-left: calc(var(--pc-space-unit) * 5);
+  }
+  .pc-editor-content li + li {
+    margin-top: calc(var(--pc-space-unit) * 1.5);
+  }
+  .pc-editor-content a {
+    color: var(--pc-color-accent);
+    text-decoration: underline;
+  }
+  .pc-editor-content strong {
+    font-weight: 600;
+    color: var(--pc-color-primary);
+  }
+  .pc-editor-content blockquote {
+    border-left: var(--pc-border-width-thick) solid var(--pc-color-accent);
+    padding-left: calc(var(--pc-space-unit) * 4);
+    font-style: italic;
+    color: var(--pc-color-text-muted);
+  }
+  .pc-editor-content hr {
+    border: 0;
+    border-top: var(--pc-border-width-thin) solid var(--pc-color-border);
+  }
+  .pc-editor-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--pc-radius-md);
+  }
+  .pc-editor-content img.ProseMirror-selectednode {
+    outline: var(--pc-border-width-thick) solid var(--pc-color-focus-ring);
+  }
+  .pc-editor-content table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--pc-text-small);
+  }
+  .pc-editor-content th,
+  .pc-editor-content td {
+    border: var(--pc-border-width-thin) solid var(--pc-color-border);
+    padding: calc(var(--pc-space-unit) * 2);
+    text-align: left;
+    vertical-align: top;
+  }
+  .pc-editor-content th {
+    background: var(--pc-color-surface-alt);
+    font-weight: 600;
+  }
+  .pc-editor-content .selectedCell {
+    background: var(--pc-color-accent-subtle);
+  }
+  .pc-editor-content aside.callout {
+    border-radius: var(--pc-radius-md);
+    border: var(--pc-border-width-thin) solid var(--pc-color-info-border);
+    background: var(--pc-color-info-bg);
+    padding: calc(var(--pc-space-unit) * 4);
+    color: var(--pc-color-info-text);
+  }
+  .pc-editor-content aside.callout-warning {
+    border-color: var(--pc-color-warning-border);
+    background: var(--pc-color-warning-bg);
+    color: var(--pc-color-warning-text);
+  }
+  .pc-editor-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    color: var(--pc-color-text-subtle);
+  }
+}

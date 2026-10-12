@@ -1,0 +1,36 @@
+/*
+ * Dashboard only tokens. Every value is built from the shared scale in shared/tokens.css
+ * (copied from the website by scripts/sync-design.mjs): no new colours, sizes or shadows.
+ */
+:root {
+  /* App shell */
+  --pc-dash-sidebar-width: calc(var(--pc-space-unit) * 64); /* 16rem */
+  --pc-dash-sidebar-collapsed-width: calc(var(--pc-space-unit) * 16); /* 4rem */
+  --pc-dash-topbar-height: calc(var(--pc-space-unit) * 16); /* 4rem */
+  --pc-dash-content-max: var(--pc-container-wide);
+  --pc-dash-gutter: calc(var(--pc-space-unit) * 6);
+
+  /* Tables: comfortable by default, compact for dense lists */
+  --pc-dash-row-height: calc(var(--pc-space-unit) * 13);
+  --pc-dash-row-height-compact: calc(var(--pc-space-unit) * 10);
+  --pc-dash-cell-x: calc(var(--pc-space-unit) * 4);
+
+  /* Overlays */
+  /* Notifications list: 24rem, never wider than the screen. */
+  --pc-dash-popover-width: min(calc(var(--pc-space-unit) * 96), calc(100vw - var(--pc-gutter) * 2));
+  --pc-dash-chart-height: calc(var(--pc-space-unit) * 64);
+  /* Calendar: below this width the month grid scrolls sideways instead of squashing days. */
+  --pc-dash-calendar-min-width: calc(var(--pc-space-unit) * 224);
+
+  /* Semantic status colours: aliases of the shared feedback colours, one meaning each. */
+  --pc-dash-status-positive-bg: var(--pc-color-success-bg);
+  --pc-dash-status-positive-text: var(--pc-color-success-text);
+  --pc-dash-status-negative-bg: var(--pc-color-error-bg);
+  --pc-dash-status-negative-text: var(--pc-color-error-text);
+  --pc-dash-status-pending-bg: var(--pc-color-warning-bg);
+  --pc-dash-status-pending-text: var(--pc-color-warning-text);
+  --pc-dash-status-info-bg: var(--pc-color-info-bg);
+  --pc-dash-status-info-text: var(--pc-color-info-text);
+  --pc-dash-status-neutral-bg: var(--pc-color-surface-alt);
+  --pc-dash-status-neutral-text: var(--pc-color-text-muted);
+}

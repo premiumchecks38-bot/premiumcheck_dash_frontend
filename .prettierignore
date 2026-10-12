@@ -1,0 +1,11 @@
+.next
+out
+build
+node_modules
+.npm-cache
+coverage
+playwright-report
+test-results
+package-lock.json
+src/lib/api/types.ts
+next-env.d.ts

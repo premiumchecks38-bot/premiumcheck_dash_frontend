@@ -1,0 +1,227 @@
+/*
+ * Premium Property Checks design tokens.
+ *
+ * This is the ONE place to change brand values. Components never use raw values:
+ * they use Tailwind utilities generated from these tokens in globals.css (@theme).
+ *
+ * Naming: every token is prefixed with --pc- so it never collides with the
+ * Tailwind theme variables that globals.css maps onto it.
+ *
+ * Contrast: every text and background pair listed on /design-system is checked
+ * against WCAG 2.2 AA (4.5:1 for body text, 3:1 for large text and UI parts).
+ * Re-check that page after changing any colour here.
+ *
+ * Breakpoints (Tailwind defaults, unchanged):
+ *   sm 640px, md 768px, lg 1024px, xl 1280px, 2xl 1536px
+ */
+
+:root {
+  /* Colour: brand (deep obsidian/charcoal with vibrant blue CTAs) */
+  --pc-color-primary: #0f172a;
+  --pc-color-primary-hover: #1e293b;
+  --pc-color-primary-foreground: #ffffff;
+
+  /*
+   * Colour: accent (every CTA such as Book online, Check coverage and Pay).
+   * Brand blue #0FA3F3: white text on it provides high contrast and clarity.
+   * Hover #0284c7 provides clear interactive state feedback.
+   * accent-bright #38bdf8 is for icons on the dark primary.
+   */
+  --pc-color-accent: #0FA3F3;
+  --pc-color-accent-hover: #0284c7;
+  --pc-color-accent-foreground: #ffffff;
+  --pc-color-accent-bright: #38bdf8;
+  --pc-color-accent-subtle: #f0f9ff;
+  --pc-color-accent-subtle-foreground: #0369a1;
+  /* Third party brand colours (WhatsApp chat) and the warm glow behind hero and CTA art. */
+  --pc-color-whatsapp: #25d366;
+  --pc-color-whatsapp-hover: #20bd5a;
+  --pc-color-whatsapp-dark: #075e54;
+  --pc-color-whatsapp-teal: #128c7e;
+  --pc-color-whatsapp-tick: #53bdeb;
+  --pc-color-whatsapp-ink: #111b21;
+  --pc-color-chat: #efeae2;
+  --pc-color-chat-input: #f0f2f5;
+  --pc-color-glow: #fef08a;
+
+  /* Highlight and advice card semantic tokens */
+  --pc-color-highlight-bg: #f8fafc;
+
+  /* Shared service cards: soft lavender wash and a faint technical grid. */
+  --pc-service-card-wash: #f1eaf8;
+  --pc-service-card-grid: rgb(87 59 117 / 0.07);
+
+  /* Clean off-white surface tones */
+  --pc-color-cream-warm: #f8fafc;
+  --pc-color-cream-subtle: #f1f5f9;
+
+  /* Colour: warning (alerts and badges only) */
+  --pc-color-warning: #f2a900;
+
+  /* Colour: neutrals (professional industry standard off-white canvas and pure white surfaces) */
+  --pc-color-white: #ffffff;
+  --pc-color-black: #000000;
+  --pc-color-background: #ffffff;
+  --pc-color-surface: #f8fafc;
+  --pc-color-surface-alt: #f1f5f9;
+  --pc-color-surface-subtle: #f1f5f9;
+  --pc-color-border: #e2e8f0;
+  --pc-color-border-subtle: #e2e8f0;
+  --pc-color-border-strong: #cbd5e1;
+  --pc-color-text: #0f172a;
+  --pc-color-text-muted: #475569;
+  --pc-color-text-subtle: #64748b;
+
+  /* Colour: feedback (background, text, border) */
+  --pc-color-success-bg: #e7f6ef;
+  --pc-color-success-text: #0e6245;
+  --pc-color-success-border: #9bd3ba;
+  --pc-color-error-bg: #fdecec;
+  --pc-color-error-text: #a61b1b;
+  --pc-color-error-border: #f3b1b1;
+  --pc-color-info-bg: #e8f1fb;
+  --pc-color-info-text: #1d4e89;
+  --pc-color-info-border: #a9c8ec;
+  --pc-color-warning-bg: #fff6db;
+  --pc-color-warning-text: #7a4f00;
+  --pc-color-warning-border: #f2c94c;
+
+  /* Colour: focus ring. 3:1 or better against white, surface and primary navy. */
+  --pc-color-focus-ring: #3b82f6;
+  --pc-color-overlay: rgb(15 23 42 / 0.6);
+
+  /* Typography: families (next/font injects --font-manrope and --font-inter) */
+  --pc-font-heading:
+    var(--font-manrope), "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --pc-font-body:
+    var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --pc-font-mono:
+    var(--font-geist-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+
+
+  /* Global rem scale: full size on mobile and large screens, compact on laptops. */
+  --pc-root-font-size: 100%;
+
+  /* Typography: fluid scale. Size, line height, letter spacing, weight. */
+  --pc-text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4.5rem);
+  --pc-text-display-lh: 1.05;
+  --pc-text-display-ls: -0.03em;
+  --pc-text-display-weight: 800;
+
+  --pc-text-h1: clamp(2.125rem, 1.5rem + 2.5vw, 3.5rem);
+  --pc-text-h1-lh: 1.1;
+  --pc-text-h1-ls: -0.025em;
+  --pc-text-h1-weight: 800;
+
+  --pc-text-h2: clamp(1.75rem, 1.35rem + 1.6vw, 2.625rem);
+  --pc-text-h2-lh: 1.15;
+  --pc-text-h2-ls: -0.02em;
+  --pc-text-h2-weight: 700;
+
+  --pc-text-h3: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
+  --pc-text-h3-lh: 1.25;
+  --pc-text-h3-ls: -0.015em;
+  --pc-text-h3-weight: 700;
+
+  --pc-text-h4: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+  --pc-text-h4-lh: 1.35;
+  --pc-text-h4-ls: -0.01em;
+  --pc-text-h4-weight: 600;
+
+  --pc-text-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
+  --pc-text-lead-lh: 1.6;
+  --pc-text-lead-ls: -0.005em;
+
+  --pc-text-body: 1rem;
+  --pc-text-body-lh: 1.65;
+  --pc-text-body-ls: 0em;
+
+  --pc-text-small: 0.875rem;
+  --pc-text-small-lh: 1.55;
+  --pc-text-small-ls: 0.005em;
+
+  --pc-text-caption: max(0.75rem, 11px);
+  --pc-text-micro: 0.625rem;
+  --pc-text-caption-lh: 1.45;
+  --pc-text-caption-ls: 0.02em;
+
+  /* Spacing: 4px base unit. Tailwind multiplies this (p-0.5 = 2px ... p-32 = 128px). */
+  --pc-space-unit: 0.25rem;
+  --pc-touch-target: max(2.75rem, 44px); /* 44px minimum touch target */
+
+  /* Spacing: vertical rhythm between page sections (fluid) */
+  --pc-section-y-sm: clamp(2.5rem, 1.75rem + 3vw, 4rem);
+  --pc-section-y: clamp(3.5rem, 2.25rem + 5vw, 6rem);
+  --pc-section-y-lg: clamp(4.5rem, 2.75rem + 7vw, 8rem);
+
+  /* Layout: container widths and gutters (gutters grow at sm and lg) */
+  --pc-container-narrow: 760px;
+  --pc-container-content: 1200px;
+  --pc-container-wide: 1360px;
+  --pc-gutter: 1rem;
+  --pc-header-height: 4.5rem;
+
+  /* Radius */
+  --pc-radius-sm: 0.25rem;
+  --pc-radius-md: 0.5rem;
+  --pc-radius-lg: 0.75rem;
+  --pc-radius-xl: 1rem;
+  --pc-radius-2xl: 1.25rem;
+  --pc-radius-full: 9999px;
+
+  /* Shadows: flat modern SaaS style - no 3D or card shadows */
+  --pc-shadow-sm: none;
+  --pc-shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.07), 0 2px 4px -2px rgb(15 23 42 / 0.04);
+  --pc-shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.04);
+
+  /* Borders */
+  --pc-border-width-thin: 1px;
+  --pc-border-width-thick: 2px;
+  --pc-focus-ring-width: 2px;
+  --pc-focus-ring-offset: 2px;
+
+  /* Motion */
+  --pc-duration-fast: 120ms;
+  --pc-duration-normal: 200ms;
+  --pc-duration-slow: 320ms;
+  --pc-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --pc-ease-emphasized: cubic-bezier(0.3, 0, 0, 1.15);
+  --pc-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Z-index scale */
+  --pc-z-header: 40;
+  --pc-z-dropdown: 50;
+  --pc-z-overlay: 60;
+  --pc-z-modal: 70;
+  --pc-z-toast: 80;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --pc-gutter: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* 12px at 1024px -> 16px at 1440px with the default browser font size.
+     * Rem-based text, controls, icons and spacing all follow this shared scale.
+     * Percentages preserve the user's preferred browser font size.
+     */
+    --pc-root-font-size: clamp(75%, 13.461538% + 0.961538vw, 100%);
+    --pc-text-display: clamp(3.5rem, 6.730769vw - 24.923077px, 4.5rem);
+    --pc-gutter: 2rem;
+    --pc-header-height: 5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --pc-duration-fast: 0ms;
+    --pc-duration-normal: 0ms;
+    --pc-duration-slow: 0ms;
+  }
+}

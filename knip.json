@@ -1,0 +1,11 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": [
+    "tests/mocks/**",
+    "src/lib/api/types.ts",
+    "src/components/ui/**",
+    "src/lib/utils/format.ts",
+    "src/config/brand-colours.ts"
+  ],
+  "ignoreExportsUsedInFile": true
+}
