@@ -10,7 +10,6 @@ import { formatDate } from "@/lib/utils/format";
 
 type DailyRevenue = Schemas["DailyRevenue"];
 
-/** "6 Oct": short axis labels (the year is in the heading and the table). */
 function dayMonth(seconds: number): string {
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
@@ -19,31 +18,52 @@ function dayMonth(seconds: number): string {
   }).format(new Date(seconds * 1000));
 }
 
-/** Reads a design token from :root so the chart uses the same colours and fonts as the page. */
 function token(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 /**
- * 30 day takings line chart. Decorative for screen readers: RevenueTable carries the same
- * numbers as an accessible table. Loaded on demand, only for people with payments access.
+ * 30 day takings line chart with responsive layout and collision-free React legend.
  */
 export function RevenueChart({ daily }: { daily: DailyRevenue[] }) {
-  const ref = React.useRef<HTMLDivElement>(null);
+  const chartRef = React.useRef<HTMLDivElement>(null);
+  const [activeItem, setActiveItem] = React.useState<{
+    date: string;
+    gross: string;
+    net: string;
+  } | null>(null);
 
   React.useEffect(() => {
-    const element = ref.current;
+    const element = chartRef.current;
     if (!element || daily.length === 0) return;
-    const primary = token("--pc-color-primary");
-    const accent = token("--pc-color-accent");
-    const muted = token("--pc-color-text-muted");
-    const grid = token("--pc-color-border");
-    const font = `${token("--pc-text-caption")} ${token("--pc-font-body") || "sans-serif"}`;
+    const primary = token("--pc-color-primary") || "#0F172A";
+    const accent = token("--pc-color-accent") || "#0FA3F3";
+    const muted = token("--pc-color-text-muted") || "#64748B";
+    const grid = token("--pc-color-border") || "#E2E8F0";
+    const font = `${token("--pc-text-caption") || "11px"} ${token("--pc-font-body") || "sans-serif"}`;
 
     const lastIndex = daily.length - 1;
     const xs = daily.map((d) => new Date(`${d.date}T12:00:00Z`).getTime() / 1000);
     const gross = daily.map((d) => d.gross_pence / 100);
     const net = daily.map((d) => d.net_pence / 100);
+
+    const updateActive = (idx: number) => {
+      const item = daily[idx];
+      if (item) {
+        setActiveItem({
+          date: formatDate(new Date(`${item.date}T12:00:00Z`), "short"),
+          gross: formatMoney(item.gross_pence),
+          net: formatMoney(item.net_pence),
+        });
+      }
+    };
+
+    updateActive(lastIndex);
+
+    const isMobile = element.clientWidth < 640;
+    const chartHeight = isMobile ? 180 : 220;
+    const yAxisSize = isMobile ? 54 : 72;
+
     const axis = {
       stroke: muted,
       font,
@@ -54,19 +74,24 @@ export function RevenueChart({ daily }: { daily: DailyRevenue[] }) {
     const chart = new uPlot(
       {
         width: element.clientWidth,
-        height: element.clientHeight,
-        legend: { show: true },
-        // Away from the chart the legend shows the latest day; hovering shows that day.
+        height: chartHeight,
+        legend: { show: false }, // Custom responsive React legend below prevents layout overlaps
+        cursor: {
+          drag: { x: false, y: false },
+          points: { show: true },
+        },
         hooks: {
-          ready: [(u) => u.setLegend({ idx: lastIndex })],
+          ready: [() => updateActive(lastIndex)],
           setCursor: [
             (u) => {
-              if (u.cursor.idx === null || u.cursor.idx === undefined)
-                u.setLegend({ idx: lastIndex });
+              if (u.cursor.idx !== null && u.cursor.idx !== undefined) {
+                updateActive(u.cursor.idx);
+              } else {
+                updateActive(lastIndex);
+              }
             },
           ],
         },
-        cursor: { drag: { x: false, y: false } },
         scales: { x: { time: true } },
         axes: [
           {
@@ -75,38 +100,22 @@ export function RevenueChart({ daily }: { daily: DailyRevenue[] }) {
           },
           {
             ...axis,
-            size: 72,
+            size: yAxisSize,
             values: (_u, ticks) => ticks.map((t) => formatMoney(Math.round(t * 100))),
           },
         ],
         series: [
-          // Fall back to the latest day's values by default so the legend is never blank.
-          {
-            label: "Day",
-            value: (_u, t: number | null) => {
-              const d = t === null && daily[lastIndex] ? daily[lastIndex].date : null;
-              if (d) return formatDate(new Date(`${d}T12:00:00Z`), "short");
-              return t === null ? "" : formatDate(new Date(t * 1000), "short");
-            },
-          },
+          {},
           {
             label: "Gross",
             stroke: primary,
             width: 2,
-            value: (_u, v: number | null) => {
-              if (v === null && daily[lastIndex]) return formatMoney(daily[lastIndex].gross_pence);
-              return v === null ? "" : formatMoney(Math.round(v * 100));
-            },
           },
           {
             label: "Net",
             stroke: accent,
             width: 2,
             dash: [6, 4],
-            value: (_u, v: number | null) => {
-              if (v === null && daily[lastIndex]) return formatMoney(daily[lastIndex].net_pence);
-              return v === null ? "" : formatMoney(Math.round(v * 100));
-            },
           },
         ],
       },
@@ -114,15 +123,45 @@ export function RevenueChart({ daily }: { daily: DailyRevenue[] }) {
       element,
     );
 
-    const observer = new ResizeObserver(() =>
-      chart.setSize({ width: element.clientWidth, height: element.clientHeight }),
-    );
+    const observer = new ResizeObserver(() => {
+      if (!element) return;
+      const isMob = element.clientWidth < 640;
+      chart.setSize({
+        width: element.clientWidth,
+        height: isMob ? 180 : 220,
+      });
+    });
     observer.observe(element);
+
     return () => {
       observer.disconnect();
       chart.destroy();
     };
   }, [daily]);
 
-  return <div ref={ref} className="h-chart w-full" data-testid="revenue-chart" />;
+  return (
+    <div className="w-full space-y-3" data-testid="revenue-chart">
+      <div ref={chartRef} className="w-full overflow-hidden" />
+      {activeItem && (
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md bg-surface-alt/70 px-3 py-2 text-xs border border-border-subtle">
+          <div className="flex items-center gap-1.5">
+            <span className="text-text-subtle font-medium">Day:</span>
+            <span className="font-semibold text-text">{activeItem.date}</span>
+          </div>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2.5 rounded-xs bg-primary inline-block shrink-0" />
+              <span className="text-text-muted">Gross:</span>
+              <span className="font-semibold font-mono text-text">{activeItem.gross}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-0.5 w-2.5 border-t-2 border-dashed border-accent inline-block shrink-0" />
+              <span className="text-text-muted">Net:</span>
+              <span className="font-semibold font-mono text-text">{activeItem.net}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
