@@ -53,6 +53,7 @@ const COMMANDS: NavCommand[] = [
   { title: "Pages and CMS sections", category: "Content", href: "/pages", page: "pages", icon: FileText },
   { title: "FAQs", category: "Content", href: "/faqs", page: "faqs", icon: HelpCircle },
   { title: "Media library", category: "Content", href: "/media", page: "media", icon: FolderOpen },
+  { title: "Quote requests", category: "Bookings", href: "/leads/quotes", page: "leads", icon: FileText },
   { title: "Contact enquiries", category: "Bookings", href: "/leads", page: "leads", icon: MessageSquare },
 
   { title: "Team members", category: "Admin", href: "/team", page: "team", icon: Users },

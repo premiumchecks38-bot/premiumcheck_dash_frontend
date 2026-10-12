@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
+import { LeadsTabs } from "@/components/dashboard/leads/leads-tabs";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { usePermission } from "@/components/dashboard/session-context";
 import { StatusBadge } from "@/components/dashboard/status-badge";
@@ -111,6 +112,8 @@ export default function LeadsMessagesPage() {
           </Button>
         }
       />
+
+      <LeadsTabs />
 
       <div className="space-y-6">
         {/* Search and Filters */}

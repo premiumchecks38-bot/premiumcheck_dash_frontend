@@ -34,6 +34,7 @@ const ICONS: Record<NavIconName, LucideIcon> = {
   past: CalendarRange,
   calendar: CalendarDays,
   customers: UsersRound,
+  quotes: FileText,
   payments: CreditCard,
   payouts: Wallet,
   disputes: BadgeAlert,

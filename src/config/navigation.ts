@@ -14,6 +14,7 @@ export type NavIcon =
   | "past"
   | "calendar"
   | "customers"
+  | "quotes"
   | "payments"
   | "payouts"
   | "disputes"
@@ -74,6 +75,12 @@ export const NAVIGATION: NavGroup[] = [
         href: "/customers",
         icon: "customers",
         requires: { page: "customers" },
+      },
+      {
+        title: "Quotes",
+        href: "/leads/quotes",
+        icon: "quotes",
+        requires: { page: "leads" },
       },
       {
         title: "Enquiries",
