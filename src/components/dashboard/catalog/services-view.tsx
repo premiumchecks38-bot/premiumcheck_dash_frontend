@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Copy, MoreHorizontal, RotateCcw, Star, Trash2 } from "lucide-react";
+import { Copy, MoreHorizontal, Pencil, Plus, RotateCcw, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { SortableList, reorderPayload } from "@/components/dashboard/content/sortable-list";
@@ -27,6 +27,7 @@ import { actionErrorMessage, errorMessage } from "@/lib/client/errors";
 
 import { CategoriesPanel } from "./categories-panel";
 import { PropertyTypesPanel } from "./property-types-panel";
+import { ServiceDialog } from "./service-dialog";
 
 const KEYS = ["q", "category", "active", "featured", "bookable", "commercial", "deleted"] as const;
 
@@ -87,6 +88,7 @@ function ServicesList() {
   const categories = useCategories();
   const [reordering, setReordering] = React.useState(false);
   const [deleting, setDeleting] = React.useState<ServiceSummary | null>(null);
+  const [editingService, setEditingService] = React.useState<ServiceSummary | "new" | null>(null);
 
   const query = {
     search: filters.q || undefined,
@@ -135,15 +137,17 @@ function ServicesList() {
       id: "name",
       header: "Service",
       cell: ({ row }) => (
-        <span className="flex flex-col">
-          <Link
-            href={`/services/${row.original.id}` as Route}
-            className="font-semibold text-primary underline-offset-4 hover:underline"
-          >
+        <button
+          type="button"
+          onClick={() => canEdit && setEditingService(row.original)}
+          className="flex flex-col text-left group focus-visible:outline-focus"
+          aria-label={canEdit ? `Edit ${row.original.name}` : row.original.name}
+        >
+          <span className="font-semibold text-primary underline-offset-4 group-hover:underline">
             {row.original.name}
-          </Link>
+          </span>
           <span className="text-caption text-text-muted">/services/{row.original.slug}</span>
-        </span>
+        </button>
       ),
     },
     { id: "category", header: "Category", cell: ({ row }) => row.original.category.name },
@@ -240,6 +244,9 @@ function ServicesList() {
                 </MenuItem>
               ) : (
                 <>
+                  <MenuItem onSelect={() => setEditingService(row.original)}>
+                    <Pencil className="h-4 w-4" aria-hidden="true" /> Edit service
+                  </MenuItem>
                   <MenuItem
                     onSelect={() =>
                       void act(`/services/${row.original.id}/duplicate`, "Copy created (hidden until you activate it).")
@@ -285,11 +292,23 @@ function ServicesList() {
               : "Choose a category to reorder its services."
             : "You can view services. Ask an owner or admin for edit access to change them."}
         </p>
-        {canReorder ? (
-          <Button variant="outline" size="sm" onClick={() => setReordering((r) => !r)} aria-pressed={reordering}>
-            {reordering ? "Done reordering" : "Reorder"}
-          </Button>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {canReorder ? (
+            <Button variant="outline" size="sm" onClick={() => setReordering((r) => !r)} aria-pressed={reordering}>
+              {reordering ? "Done reordering" : "Reorder"}
+            </Button>
+          ) : null}
+          {canEdit ? (
+            <Button
+              size="sm"
+              variant="accent"
+              onClick={() => setEditingService("new")}
+              data-testid="new-service-btn"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" /> New service
+            </Button>
+          ) : null}
+        </div>
       </div>
       {reordering && canReorder ? (
         <SortableList
@@ -322,6 +341,13 @@ function ServicesList() {
           testId="services-table"
         />
       )}
+      {editingService ? (
+        <ServiceDialog
+          service={editingService === "new" ? null : editingService}
+          onClose={() => setEditingService(null)}
+          onSaved={() => void refresh()}
+        />
+      ) : null}
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}

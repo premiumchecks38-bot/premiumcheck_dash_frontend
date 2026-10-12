@@ -89,6 +89,9 @@ export function PageEditor({ pageId }: { pageId: string }) {
   const [slug, setSlug] = React.useState("");
   const [parentId, setParentId] = React.useState("");
   const [seoValues, setSeoValues] = React.useState<SeoValues>(seoValuesOf(null));
+  const [dirty, setDirty] = React.useState(false);
+
+  useUnsavedChanges(dirty);
 
   // Preview iframe state
   const [previewWidth, setPreviewWidth] = React.useState<"desktop" | "mobile">("desktop");
@@ -108,6 +111,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
       setTitle(p.title);
       setSlug(p.slug);
       setParentId(p.parent_id ?? "");
+      setDirty(false);
     }
   }, [pageQuery.data]);
 
@@ -157,6 +161,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
       }
 
       toast.success("Page settings saved.");
+      setDirty(false);
       await refresh();
     });
   };
@@ -386,7 +391,10 @@ export function PageEditor({ pageId }: { pageId: string }) {
                   label="Page title"
                   required
                   value={title}
-                  onChange={setTitle}
+                  onChange={(v) => {
+                    setTitle(v);
+                    setDirty(true);
+                  }}
                   disabled={!canEdit}
                 />
 
@@ -395,7 +403,10 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     <SlugField
                       id="page-slug"
                       value={slug}
-                      onChange={setSlug}
+                      onChange={(v) => {
+                        setSlug(v);
+                        setDirty(true);
+                      }}
                       title={title}
                       prefix="/"
                       savedSlug={page.slug}
@@ -405,7 +416,10 @@ export function PageEditor({ pageId }: { pageId: string }) {
                       id="page-parent"
                       label="Parent page"
                       value={parentId}
-                      onChange={setParentId}
+                      onChange={(v) => {
+                        setParentId(v);
+                        setDirty(true);
+                      }}
                       options={parentOptions}
                       placeholder="None (Top level page)"
                       disabled={!canEdit}
@@ -424,7 +438,10 @@ export function PageEditor({ pageId }: { pageId: string }) {
               <SeoFields
                 idPrefix="page-seo"
                 values={seoValues}
-                onChange={setSeoValues}
+                onChange={(v) => {
+                  setSeoValues(v);
+                  setDirty(true);
+                }}
                 path={page.path}
                 fallbackTitle={title || "Page"}
                 disabled={!canEdit}
@@ -484,7 +501,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
       <PublishBar
         status={page.is_published ? "published" : "draft"}
         lastSaved={page.updated_at}
-        dirty={false}
+        dirty={dirty}
         busy={save.busy}
         canEdit={canEdit}
         previewUrl={liveUrl}

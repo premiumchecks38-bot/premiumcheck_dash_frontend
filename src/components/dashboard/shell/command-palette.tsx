@@ -49,6 +49,7 @@ const COMMANDS: NavCommand[] = [
   { title: "Prices and VAT", category: "Catalog", href: "/prices", page: "prices", icon: Tag },
   { title: "Coverage areas", category: "Catalog", href: "/areas", page: "areas", icon: MapPin },
   { title: "Availability and slots", category: "Catalog", href: "/availability", page: "availability", icon: Calendar },
+  { title: "Engineers and Inspectors", category: "Catalog", href: "/availability?tab=engineers", page: "availability", icon: Users },
   { title: "Blog and Compliance Hub", category: "Content", href: "/blog", page: "blogs", icon: BookOpen },
   { title: "Pages and CMS sections", category: "Content", href: "/pages", page: "pages", icon: FileText },
   { title: "FAQs", category: "Content", href: "/faqs", page: "faqs", icon: HelpCircle },

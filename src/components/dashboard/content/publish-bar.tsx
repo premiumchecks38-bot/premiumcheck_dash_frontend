@@ -161,8 +161,9 @@ export function PublishBar({
               </Button>
             ) : null}
             <Button
-              variant="outline"
+              variant={status === "published" && dirty ? "accent" : "outline"}
               size="sm"
+              loading={busy}
               disabled={busy || !dirty}
               onClick={onSaveDraft}
               data-testid="save-draft"

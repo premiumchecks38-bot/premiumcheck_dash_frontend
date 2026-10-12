@@ -249,7 +249,7 @@ export default function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        description="Company details, booking configuration, notifications and public integrations."
+        description="Company details, booking configuration, certificates and notifications."
         breadcrumbs={[
           { label: "Dashboard", href: "/" },
           { label: "Admin" },
@@ -273,12 +273,7 @@ export default function SettingsPage() {
       <Tabs value={tab} onValueChange={setTab} className="space-y-6">
         <TabsList className="flex flex-wrap h-auto gap-1">
           <TabsTrigger value="company">Company</TabsTrigger>
-          <TabsTrigger value="booking">Booking & Congestion</TabsTrigger>
-          <TabsTrigger value="certificates">Certificates</TabsTrigger>
-          <TabsTrigger value="emails">Notifications</TabsTrigger>
           <TabsTrigger value="social">Social</TabsTrigger>
-          <TabsTrigger value="seo">SEO Defaults</TabsTrigger>
-          <TabsTrigger value="integrations">Integrations</TabsTrigger>
         </TabsList>
 
         {/* Company Settings */}
@@ -361,185 +356,6 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* Booking & Congestion */}
-        <TabsContent value="booking" className="space-y-4">
-          <div className="rounded-lg border border-dashboard-border bg-dashboard-card p-6 space-y-4 max-w-2xl">
-            <h3 className="text-sm font-semibold text-dashboard-text">Booking rules</h3>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextField
-                label="Minimum lead time (hours)"
-                value={String(formData.booking.lead_time_hours ?? 24)}
-                onChange={(val) => updateGroup("booking", { lead_time_hours: parseInt(val, 10) || 0 })}
-                disabled={!canEdit}
-              />
-
-              <TextField
-                label="Horizon window (days)"
-                value={String(formData.booking.horizon_days ?? 60)}
-                onChange={(val) => updateGroup("booking", { horizon_days: parseInt(val, 10) || 60 })}
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextField
-                label="Hold timeout (minutes)"
-                value={String(formData.booking.slot_hold_minutes ?? 15)}
-                onChange={(val) => updateGroup("booking", { slot_hold_minutes: parseInt(val, 10) || 15 })}
-                disabled={!canEdit}
-              />
-
-              <TextField
-                label="Appointment reminder (hours before)"
-                value={String(formData.booking.appointment_reminder_hours ?? 24)}
-                onChange={(val) => updateGroup("booking", { appointment_reminder_hours: parseInt(val, 10) || 24 })}
-                disabled={!canEdit}
-              />
-            </div>
-
-            <div className="border-t border-dashboard-border pt-4 space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-dashboard-muted">
-                London Congestion Charge
-              </h4>
-
-              <CheckField
-                label="Enable Congestion Zone charge"
-                hint="Automatically suggest or apply a surcharge for addresses within the Congestion Charge zone."
-                checked={formData.booking.congestion_charge.enabled}
-                onChange={(chk) =>
-                  updateGroup("booking", {
-                    congestion_charge: { ...formData.booking.congestion_charge, enabled: chk },
-                  })
-                }
-                disabled={!canEdit}
-              />
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <TextField
-                  label="Charge amount (£ ex VAT)"
-                  value={String((formData.booking.congestion_charge.amount_pence / 100).toFixed(2))}
-                  onChange={(val) => {
-                    const pounds = parseFloat(val) || 0;
-                    updateGroup("booking", {
-                      congestion_charge: {
-                        ...formData.booking.congestion_charge,
-                        amount_pence: Math.round(pounds * 100),
-                      },
-                    });
-                  }}
-                  disabled={!canEdit}
-                />
-
-                <TextField
-                  label="Charge invoice label"
-                  value={formData.booking.congestion_charge.label}
-                  onChange={(val) =>
-                    updateGroup("booking", {
-                      congestion_charge: { ...formData.booking.congestion_charge, label: val },
-                    })
-                  }
-                  disabled={!canEdit}
-                />
-              </div>
-            </div>
-
-            <div className="border-t border-dashboard-border pt-4">
-              <CheckField
-                label="Offer Pay Later"
-                hint="Allow customers to complete checkout with payment due upon inspection."
-                checked={formData.booking.pay_later.enabled}
-                onChange={(chk) => updateGroup("booking", { pay_later: { enabled: chk } })}
-                disabled={!canEdit}
-              />
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Certificates */}
-        <TabsContent value="certificates" className="space-y-4">
-          <div className="rounded-lg border border-dashboard-border bg-dashboard-card p-6 space-y-4 max-w-2xl">
-            <h3 className="text-sm font-semibold text-dashboard-text">
-              Certificate default validity
-            </h3>
-            <p className="text-xs text-dashboard-muted">
-              Number of months before a certificate expires for automatic renewal reminder calculations.
-            </p>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {Object.entries(formData.certificates.validity_months).map(([type, months]) => (
-                <div
-                  key={type}
-                  className="flex items-center justify-between rounded-md border border-dashboard-border bg-dashboard-surface/40 p-3 text-xs"
-                >
-                  <span className="font-semibold text-dashboard-text uppercase">{type}</span>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      min={0}
-                      max={240}
-                      value={months ?? ""}
-                      disabled={!canEdit}
-                      placeholder="None"
-                      onChange={(e) => {
-                        const val = e.target.value ? parseInt(e.target.value, 10) : null;
-                        updateGroup("certificates", {
-                          validity_months: {
-                            ...formData.certificates.validity_months,
-                            [type]: val,
-                          },
-                        });
-                      }}
-                      className="h-7 w-20 rounded border border-dashboard-border bg-dashboard-surface px-2 text-center text-xs text-dashboard-text focus:outline-none"
-                    />
-                    <span className="text-dashboard-muted">mos</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Notifications */}
-        <TabsContent value="emails" className="space-y-4">
-          <div className="rounded-lg border border-dashboard-border bg-dashboard-card p-6 space-y-4 max-w-2xl">
-            <h3 className="text-sm font-semibold text-dashboard-text">Staff email notifications</h3>
-            <p className="text-xs text-dashboard-muted">
-              Addresses notified when bookings are confirmed, quotes submitted or contact messages sent. Enter emails separated by commas.
-            </p>
-
-            <TextField
-              label="Admin alert recipients"
-              value={formData.emails.admin_notification_emails.join(", ")}
-              onChange={(val) =>
-                updateGroup("emails", {
-                  admin_notification_emails: val
-                    .split(",")
-                    .map((e) => e.trim())
-                    .filter(Boolean),
-                })
-              }
-              placeholder="bookings@premiumchecks.co.uk, operations@premiumchecks.co.uk"
-              disabled={!canEdit}
-            />
-
-            <TextField
-              label="Contact form alert recipients"
-              value={formData.emails.contact_recipients.join(", ")}
-              onChange={(val) =>
-                updateGroup("emails", {
-                  contact_recipients: val
-                    .split(",")
-                    .map((e) => e.trim())
-                    .filter(Boolean),
-                })
-              }
-              placeholder="leads@premiumchecks.co.uk"
-              disabled={!canEdit}
-            />
-          </div>
-        </TabsContent>
-
         {/* Social */}
         <TabsContent value="social" className="space-y-4">
           <div className="rounded-lg border border-dashboard-border bg-dashboard-card p-6 space-y-4 max-w-2xl">
@@ -585,72 +401,6 @@ export default function SettingsPage() {
                 disabled={!canEdit}
               />
             </div>
-          </div>
-        </TabsContent>
-
-        {/* SEO Defaults */}
-        <TabsContent value="seo" className="space-y-4">
-          <div className="rounded-lg border border-dashboard-border bg-dashboard-card p-6 space-y-4 max-w-2xl">
-            <h3 className="text-sm font-semibold text-dashboard-text">Global SEO settings</h3>
-
-            <TextField
-              label="Title tag suffix"
-              value={formData.seo.title_suffix}
-              onChange={(val) => updateGroup("seo", { title_suffix: val })}
-              placeholder="Premium Property Checks"
-              disabled={!canEdit}
-            />
-
-            <TextField
-              label="Default site meta description"
-              value={formData.seo.default_description}
-              onChange={(val) => updateGroup("seo", { default_description: val })}
-              multiline
-              rows={3}
-              placeholder="Fallback meta description used across pages that have no custom description..."
-              disabled={!canEdit}
-            />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextField
-                label="Google Site Verification ID"
-                value={formData.seo.google_site_verification}
-                onChange={(val) => updateGroup("seo", { google_site_verification: val })}
-                placeholder="google-site-verification token"
-                disabled={!canEdit}
-              />
-
-              <TextField
-                label="Bing Webmaster Verification ID"
-                value={formData.seo.bing_site_verification}
-                onChange={(val) => updateGroup("seo", { bing_site_verification: val })}
-                placeholder="msvalidate.01 token"
-                disabled={!canEdit}
-              />
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Integrations */}
-        <TabsContent value="integrations" className="space-y-4">
-          <div className="rounded-lg border border-dashboard-border bg-dashboard-card p-6 space-y-4 max-w-2xl">
-            <h3 className="text-sm font-semibold text-dashboard-text">Analytics & Tracking</h3>
-
-            <TextField
-              label="Google Analytics 4 Measurement ID"
-              value={formData.integrations.google_analytics_id}
-              onChange={(val) => updateGroup("integrations", { google_analytics_id: val })}
-              placeholder="e.g. G-XXXXXXXXXX"
-              disabled={!canEdit}
-            />
-
-            <TextField
-              label="Google Tag Manager ID"
-              value={formData.integrations.google_tag_manager_id}
-              onChange={(val) => updateGroup("integrations", { google_tag_manager_id: val })}
-              placeholder="e.g. GTM-XXXXXXX"
-              disabled={!canEdit}
-            />
           </div>
         </TabsContent>
       </Tabs>

@@ -29,8 +29,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-GB" className={fontVariables} data-scroll-behavior="smooth">
-      <body className="min-h-screen bg-background font-body text-text antialiased">
+    <html lang="en-GB" className={fontVariables} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body
+        className="min-h-screen bg-background font-body text-text antialiased"
+        suppressHydrationWarning
+      >
         <Providers>{children}</Providers>
       </body>
     </html>

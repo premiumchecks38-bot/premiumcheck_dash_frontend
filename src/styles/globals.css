@@ -34,6 +34,43 @@
     scrollbar-width: auto;
     scroll-padding-top: var(--pc-dash-topbar-height);
   }
+
+  /* Universal pointer cursor on all clickable and interactive elements */
+  a,
+  button,
+  summary,
+  select,
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="radio"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  label[for],
+  label:has(input),
+  label:has(select),
+  label:has(textarea),
+  [data-clickable="true"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled,
+  [disabled],
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed;
+  }
 }
 
 /*
