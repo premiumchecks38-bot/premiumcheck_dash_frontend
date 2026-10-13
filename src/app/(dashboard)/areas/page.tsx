@@ -430,8 +430,6 @@ function AreaDialog({
   const isNew = !area;
   const [name, setName] = React.useState(area?.name ?? "");
   const [slug, setSlug] = React.useState(area?.slug ?? "");
-  const [intro, setIntro] = React.useState(area?.intro ?? "");
-  const [description, setDescription] = React.useState(area?.content ?? area?.intro ?? "");
   const [parentId, setParentId] = React.useState(area?.parent_id ?? "");
   const [isActive, setIsActive] = React.useState(area?.is_active ?? true);
 
@@ -454,8 +452,6 @@ function AreaDialog({
     const payload = cleanDeep({
       name: name.trim(),
       slug: slug.trim() || undefined,
-      intro: intro.trim() || null,
-      content: description.trim() || null,
       parent_id: parentId || null,
       is_active: isActive,
     });
@@ -524,24 +520,6 @@ function AreaDialog({
             value={parentId}
             onChange={setParentId}
             options={parentOptions}
-          />
-
-          <TextField
-            label="Introduction"
-            value={intro}
-            onChange={setIntro}
-            placeholder="Brief summary displayed in area cards and meta descriptions..."
-            multiline
-            rows={2}
-          />
-
-          <TextField
-            label="Main description / content"
-            value={description}
-            onChange={setDescription}
-            placeholder="Detailed description of coverage and property inspection services in this area..."
-            multiline
-            rows={4}
           />
 
           <CheckField

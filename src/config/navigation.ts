@@ -22,6 +22,7 @@ export type NavIcon =
   | "prices"
   | "areas"
   | "availability"
+  | "engineers"
   | "blog"
   | "pages"
   | "faqs"
@@ -120,29 +121,25 @@ export const NAVIGATION: NavGroup[] = [
         icon: "availability",
         requires: { page: "availability" },
       },
+      {
+        title: "Engineers",
+        href: "/engineers" as Route,
+        icon: "engineers",
+        requires: { page: "availability" },
+      },
     ],
   },
   {
     title: "Content",
     items: [
       { title: "Blog", href: "/blog", icon: "blog", requires: { page: "blogs" } },
-      { title: "Pages", href: "/pages", icon: "pages", requires: { page: "pages" } },
       { title: "FAQs", href: "/faqs", icon: "faqs", requires: { page: "faqs" } },
-      { title: "Media", href: "/media", icon: "media", requires: { page: "media" } },
     ],
   },
   {
     title: "Admin",
     items: [
       { title: "Team", href: "/team", icon: "team", requires: { page: "team" } },
-      { title: "Settings", href: "/settings", icon: "settings", requires: { page: "settings" } },
-      { title: "Audit log", href: "/audit-log", icon: "audit", requires: { page: "audit_logs" } },
-      {
-        title: "Email log",
-        href: "/email-log",
-        icon: "email",
-        requires: { roles: OWNER_AND_ADMIN },
-      },
     ],
   },
 ];

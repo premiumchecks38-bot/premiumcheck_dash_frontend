@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Copy, MoreHorizontal, Pencil, Plus, RotateCcw, Star, Trash2 } from "lucide-react";
+import { Copy, MoreHorizontal, Pencil, Plus, RotateCcw, Star, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { SortableList, reorderPayload } from "@/components/dashboard/content/sortable-list";
@@ -89,6 +89,7 @@ function ServicesList() {
   const [reordering, setReordering] = React.useState(false);
   const [deleting, setDeleting] = React.useState<ServiceSummary | null>(null);
   const [editingService, setEditingService] = React.useState<ServiceSummary | "new" | null>(null);
+  const [editTab, setEditTab] = React.useState<"details" | "prices">("details");
 
   const query = {
     search: filters.q || undefined,
@@ -139,7 +140,12 @@ function ServicesList() {
       cell: ({ row }) => (
         <button
           type="button"
-          onClick={() => canEdit && setEditingService(row.original)}
+          onClick={() => {
+            if (canEdit) {
+              setEditTab("details");
+              setEditingService(row.original);
+            }
+          }}
           className="flex flex-col text-left group focus-visible:outline-focus"
           aria-label={canEdit ? `Edit ${row.original.name}` : row.original.name}
         >
@@ -154,12 +160,28 @@ function ServicesList() {
     {
       id: "price",
       header: "From (ex VAT)",
-      cell: ({ row }) =>
-        row.original.from_price_pence === null ? (
-          <span className="text-text-muted">No prices</span>
-        ) : (
-          <MoneyText pence={row.original.from_price_pence} />
-        ),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          {row.original.from_price_pence === null ? (
+            <span className="text-text-muted">No prices</span>
+          ) : (
+            <MoneyText pence={row.original.from_price_pence} />
+          )}
+          {canEdit && !row.original.deleted_at ? (
+            <button
+              type="button"
+              onClick={() => {
+                setEditTab("prices");
+                setEditingService(row.original);
+              }}
+              className="text-[11px] font-semibold text-accent hover:underline px-1.5 py-0.5 rounded bg-accent-soft/40 transition-colors"
+              title="Edit price packages for this service"
+            >
+              Prices
+            </button>
+          ) : null}
+        </div>
+      ),
     },
     {
       id: "flags",
@@ -244,8 +266,21 @@ function ServicesList() {
                 </MenuItem>
               ) : (
                 <>
-                  <MenuItem onSelect={() => setEditingService(row.original)}>
-                    <Pencil className="h-4 w-4" aria-hidden="true" /> Edit service
+                  <MenuItem
+                    onSelect={() => {
+                      setEditTab("details");
+                      setEditingService(row.original);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden="true" /> Edit service details
+                  </MenuItem>
+                  <MenuItem
+                    onSelect={() => {
+                      setEditTab("prices");
+                      setEditingService(row.original);
+                    }}
+                  >
+                    <Tag className="h-4 w-4" aria-hidden="true" /> Manage price options
                   </MenuItem>
                   <MenuItem
                     onSelect={() =>
@@ -344,7 +379,11 @@ function ServicesList() {
       {editingService ? (
         <ServiceDialog
           service={editingService === "new" ? null : editingService}
-          onClose={() => setEditingService(null)}
+          initialTab={editTab}
+          onClose={() => {
+            setEditingService(null);
+            setEditTab("details");
+          }}
           onSaved={() => void refresh()}
         />
       ) : null}

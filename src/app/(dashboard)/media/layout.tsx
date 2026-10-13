@@ -1,5 +1,5 @@
-import { RouteGuard } from "@/components/dashboard/route-guard";
+import { notFound } from "next/navigation";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return <RouteGuard href="/media">{children}</RouteGuard>;
+export default function Layout() {
+  notFound();
 }

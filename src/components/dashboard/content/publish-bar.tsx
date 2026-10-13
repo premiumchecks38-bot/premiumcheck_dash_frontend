@@ -164,7 +164,7 @@ export function PublishBar({
               variant={status === "published" && dirty ? "accent" : "outline"}
               size="sm"
               loading={busy}
-              disabled={busy || !dirty}
+              disabled={busy || (status === "published" && !dirty)}
               onClick={onSaveDraft}
               data-testid="save-draft"
             >

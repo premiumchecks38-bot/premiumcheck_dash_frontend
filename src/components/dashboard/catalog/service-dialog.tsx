@@ -42,11 +42,13 @@ interface ServiceFormState {
 }
 
 export function ServiceDialog({
-  service,
+  service: initialService,
+  initialTab = "details",
   onClose,
   onSaved,
 }: {
   service: ServiceSummary | null;
+  initialTab?: "details" | "prices";
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -56,27 +58,30 @@ export function ServiceDialog({
   const categories = categoriesQuery.data ?? [];
   const save = useSave();
 
+  const [currentService, setCurrentService] = React.useState<ServiceSummary | null>(initialService);
+  const [activeTab, setActiveTab] = React.useState<"details" | "prices">(initialTab);
+
   // If editing an existing service, fetch its full detail (including price options & extra fields)
   const detailQuery = useQuery({
-    queryKey: ["service-detail", service?.id],
-    queryFn: () => admin<ServiceDetail>(`/services/${service!.id}`),
-    enabled: Boolean(service?.id),
+    queryKey: ["service-detail", currentService?.id],
+    queryFn: () => admin<ServiceDetail>(`/services/${currentService!.id}`),
+    enabled: Boolean(currentService?.id),
   });
 
   const detail = detailQuery.data;
 
   const [form, setForm] = React.useState<ServiceFormState>({
-    name: service?.name ?? "",
-    category_id: service?.category?.id ?? "",
-    slug: service?.slug ?? "",
+    name: initialService?.name ?? "",
+    category_id: initialService?.category?.id ?? "",
+    slug: initialService?.slug ?? "",
     short_description: "",
     duration_minutes: "",
     who_needs_it: "",
     certificate_validity: "",
-    is_bookable: service?.is_bookable ?? true,
-    is_commercial: service?.is_commercial ?? false,
-    is_active: service?.is_active ?? true,
-    is_featured: service?.is_featured ?? false,
+    is_bookable: initialService?.is_bookable ?? true,
+    is_commercial: initialService?.is_commercial ?? false,
+    is_active: initialService?.is_active ?? true,
+    is_featured: initialService?.is_featured ?? false,
   });
 
   // When detailed service data loads, populate any missing fields
@@ -98,8 +103,6 @@ export function ServiceDialog({
       }));
     }
   }, [detail]);
-
-  const [activeTab, setActiveTab] = React.useState<"details" | "prices">("details");
 
   const categoryOptions = categories.map((c) => ({
     value: c.id,
@@ -138,29 +141,30 @@ export function ServiceDialog({
 
     const result = await save.run(
       () =>
-        service
-          ? admin(`/services/${service.id}`, { method: "PATCH", json: payload })
-          : admin("/services", { method: "POST", json: payload }),
-      service ? "Service updated successfully." : "Service created successfully.",
+        currentService
+          ? admin(`/services/${currentService.id}`, { method: "PATCH", json: payload })
+          : admin<ServiceDetail>("/services", { method: "POST", json: payload }),
+      currentService ? "Service updated successfully." : "Service created! Now configure price options below.",
     );
 
     if (result) {
       await queryClient.invalidateQueries({ queryKey: ["services"] });
-      await queryClient.invalidateQueries({ queryKey: ["service-detail", service?.id] });
       onSaved();
-      if (!service) {
-        onClose();
+      if (!currentService && result && (result as any).id) {
+        setCurrentService(result as any);
+        setActiveTab("prices");
+        await queryClient.invalidateQueries({ queryKey: ["service-detail", (result as any).id] });
       }
     }
   };
 
-  const isEditing = Boolean(service);
+  const isEditing = Boolean(currentService);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? `Edit: ${service?.name}` : "Create new service"}</DialogTitle>
+          <DialogTitle>{isEditing ? `Service: ${currentService?.name}` : "Create new service"}</DialogTitle>
           <DialogDescription>
             {isEditing
               ? "Update service properties, categories, booking availability and price options."
@@ -206,7 +210,7 @@ export function ServiceDialog({
                 setForm={setForm}
                 save={save}
                 categoryOptions={categoryOptions}
-                savedSlug={detail?.slug ?? service?.slug ?? null}
+                savedSlug={detail?.slug ?? currentService?.slug ?? null}
                 isEditing={isEditing}
               />
             </TabsContent>
@@ -237,7 +241,7 @@ export function ServiceDialog({
                 onClick={() => void handleSaveDetails()}
                 data-testid="save-service-btn"
               >
-                {isEditing ? "Save changes" : "Create service"}
+                {isEditing ? "Save changes" : "Create service & Add prices"}
               </Button>
             )}
           </DialogFooter>
@@ -300,17 +304,6 @@ function DetailsForm({
         error={save.fieldErrors.slug}
       />
 
-      <TextField
-        id="service-short-description"
-        label="Short description"
-        multiline
-        rows={3}
-        maxLength={500}
-        counter
-        value={form.short_description}
-        onChange={(short_description) => setForm((prev) => ({ ...prev, short_description }))}
-        placeholder="Brief summary shown on service cards and booking steps..."
-      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TextField

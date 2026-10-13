@@ -8,9 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 
-import { AttachedFaqs } from "@/components/dashboard/content/attached-faqs";
 import { PublishBar, type AutosaveState, type PublishStatus } from "@/components/dashboard/content/publish-bar";
-import { SeoFields, seoPayload, seoValuesOf, useSeoMeta, type SeoValues } from "@/components/dashboard/content/seo-fields";
 import { SlugField } from "@/components/dashboard/content/slug-field";
 import { CheckField, SelectField, TextField } from "@/components/dashboard/content/text-field";
 import { RichTextEditor } from "@/components/dashboard/editor";
@@ -22,7 +20,6 @@ import { useUnsavedChanges } from "@/components/dashboard/use-unsaved-changes";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { BlogPost } from "@/lib/api/schemas";
 import { admin } from "@/lib/client/api";
 import { isDirty } from "@/lib/forms/unsaved";
@@ -45,7 +42,6 @@ export function BlogEditor({ postId }: { postId?: string }) {
   });
 
   const categoriesQuery = useBlogCategories();
-  const seoMeta = useSeoMeta("blog_post", postId);
 
   // Form states
   const [title, setTitle] = React.useState("");
@@ -56,7 +52,6 @@ export function BlogEditor({ postId }: { postId?: string }) {
   const [isComplianceHub, setIsComplianceHub] = React.useState(false);
   const [featuredImage, setFeaturedImage] = React.useState<ImageValue | null>(null);
   const [content, setContent] = React.useState<unknown>(null);
-  const [seoValues, setSeoValues] = React.useState<SeoValues>(seoValuesOf(null));
   const [dirty, setDirty] = React.useState(isNew);
 
   useUnsavedChanges(dirty);
@@ -90,12 +85,6 @@ export function BlogEditor({ postId }: { postId?: string }) {
       setDirty(false);
     }
   }, [postQuery.data]);
-
-  React.useEffect(() => {
-    if (seoMeta.data) {
-      setSeoValues(seoValuesOf(seoMeta.data.meta));
-    }
-  }, [seoMeta.data]);
 
   // Autosave debounce for drafting existing posts
   React.useEffect(() => {
@@ -170,22 +159,6 @@ export function BlogEditor({ postId }: { postId?: string }) {
         });
       }
 
-      // Save SEO
-      const seoBody = seoPayload(seoValues, user.role === "owner" || user.role === "admin");
-      if (seoMeta.data?.meta?.id) {
-        await admin(`/seo/${seoMeta.data.meta.id}`, { method: "PATCH", json: seoBody });
-      } else if (seoValues.meta_title || seoValues.meta_description) {
-        await admin("/seo", {
-          method: "PUT",
-          json: {
-            ...seoBody,
-            path: `${prefix}${saved.slug}`,
-            entity_type: "blog_post",
-            entity_id: saved.id,
-          },
-        });
-      }
-
       return saved;
     }, isNew ? "Article created." : status === "published" ? "Changes saved." : "Draft saved.");
 
@@ -203,20 +176,54 @@ export function BlogEditor({ postId }: { postId?: string }) {
   };
 
   const handlePublish = async () => {
-    if (isNew) {
-      await handleSaveDraft();
+    if (!title.trim()) {
+      save.setFieldErrors({ title: "Enter a title" });
       return;
     }
 
-    if (dirty) {
-      await handleSaveDraft();
-    }
+    const payload = {
+      ...cleanDeep({
+        title: title.trim(),
+        slug: slug.trim() || null,
+        category_id: categoryId || null,
+        excerpt: excerpt.trim() || null,
+        author_name: authorName.trim() || null,
+      }),
+      content: content && typeof content === "object" ? content : null,
+      featured_image_id: featuredImage?.id ?? null,
+      is_compliance_hub: isComplianceHub,
+    };
 
-    await save.run(async () => {
-      await admin(`/blog-posts/${postId}/publish`, { method: "POST" });
-      await queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
-      await queryClient.invalidateQueries({ queryKey: ["blog-post", postId] });
+    const res = await save.run(async () => {
+      let targetId = postId;
+      if (isNew) {
+        const created = await admin<BlogPost>("/blog-posts", {
+          method: "POST",
+          json: payload,
+        });
+        targetId = created.id;
+      } else if (dirty) {
+        await admin<BlogPost>(`/blog-posts/${postId}`, {
+          method: "PATCH",
+          json: payload,
+        });
+      }
+
+      await admin(`/blog-posts/${targetId}/publish`, { method: "POST" });
+      return targetId;
     }, "Post published to the live website.");
+
+    if (res) {
+      setDirty(false);
+      setLastSaved(new Date().toISOString());
+      setAutosaveState("saved");
+      await queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+      if (isNew) {
+        router.push(`/blog/${res}` as Route);
+      } else {
+        await queryClient.invalidateQueries({ queryKey: ["blog-post", postId] });
+      }
+    }
   };
 
   const handleUnpublish = async () => {
@@ -229,15 +236,57 @@ export function BlogEditor({ postId }: { postId?: string }) {
   };
 
   const handleSchedule = async (iso: string) => {
-    if (!postId) return;
-    await save.run(async () => {
-      await admin(`/blog-posts/${postId}/schedule`, {
+    if (!title.trim()) {
+      save.setFieldErrors({ title: "Enter a title" });
+      return;
+    }
+
+    const payload = {
+      ...cleanDeep({
+        title: title.trim(),
+        slug: slug.trim() || null,
+        category_id: categoryId || null,
+        excerpt: excerpt.trim() || null,
+        author_name: authorName.trim() || null,
+      }),
+      content: content && typeof content === "object" ? content : null,
+      featured_image_id: featuredImage?.id ?? null,
+      is_compliance_hub: isComplianceHub,
+    };
+
+    const res = await save.run(async () => {
+      let targetId = postId;
+      if (isNew) {
+        const created = await admin<BlogPost>("/blog-posts", {
+          method: "POST",
+          json: payload,
+        });
+        targetId = created.id;
+      } else if (dirty) {
+        await admin<BlogPost>(`/blog-posts/${postId}`, {
+          method: "PATCH",
+          json: payload,
+        });
+      }
+
+      await admin(`/blog-posts/${targetId}/schedule`, {
         method: "POST",
         json: { published_at: iso },
       });
-      await queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
-      await queryClient.invalidateQueries({ queryKey: ["blog-post", postId] });
+      return targetId;
     }, "Publishing scheduled.");
+
+    if (res) {
+      setDirty(false);
+      setLastSaved(new Date().toISOString());
+      setAutosaveState("saved");
+      await queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
+      if (isNew) {
+        router.push(`/blog/${res}` as Route);
+      } else {
+        await queryClient.invalidateQueries({ queryKey: ["blog-post", postId] });
+      }
+    }
   };
 
   const categoryOptions = (categoriesQuery.data ?? []).map((c) => ({
@@ -335,34 +384,6 @@ export function BlogEditor({ postId }: { postId?: string }) {
               readOnly={!canEdit}
             />
           </div>
-
-          <Tabs defaultValue="faqs">
-            <TabsList>
-              <TabsTrigger value="faqs">Attached FAQs</TabsTrigger>
-              <TabsTrigger value="seo">SEO & Social</TabsTrigger>
-            </TabsList>
-            <TabsContent value="faqs" className="pt-4">
-              {post ? (
-                <AttachedFaqs target="blog_post_id" id={post.id} canEdit={canEdit} defaultGroup="general" />
-              ) : (
-                <p className="text-small text-text-muted">Save the article first to attach FAQs.</p>
-              )}
-            </TabsContent>
-            <TabsContent value="seo" className="pt-4">
-              <SeoFields
-                idPrefix="blog-seo"
-                values={seoValues}
-                onChange={(v) => {
-                  setSeoValues(v);
-                  setDirty(true);
-                }}
-                path={`${prefix}${slug || "new"}`}
-                fallbackTitle={title || "Article"}
-                fallbackDescription={excerpt}
-                disabled={!canEdit}
-              />
-            </TabsContent>
-          </Tabs>
         </div>
 
         {/* Right: Metadata & Settings Sidebar */}

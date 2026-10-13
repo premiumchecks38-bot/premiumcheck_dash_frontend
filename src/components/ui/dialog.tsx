@@ -25,10 +25,15 @@ export const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = "DialogOverlay";
 
+export interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof RadixDialog.Content> {
+  hideClose?: boolean;
+}
+
 export const DialogContent = React.forwardRef<
   React.ComponentRef<typeof RadixDialog.Content>,
-  React.ComponentPropsWithoutRef<typeof RadixDialog.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, hideClose = false, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <RadixDialog.Content
@@ -42,10 +47,12 @@ export const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <RadixDialog.Close className="absolute top-4 right-4 inline-flex min-h-touch min-w-touch items-center justify-center rounded-sm p-2 text-text-muted hover:text-text focus-visible:outline-focus focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
-        <X className="h-4 w-4" aria-hidden="true" />
-        <span className="sr-only">Close</span>
-      </RadixDialog.Close>
+      {!hideClose && (
+        <RadixDialog.Close className="absolute top-4 right-4 inline-flex min-h-touch min-w-touch items-center justify-center rounded-sm p-2 text-text-muted hover:text-text focus-visible:outline-focus focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
+          <X className="h-4 w-4" aria-hidden="true" />
+          <span className="sr-only">Close</span>
+        </RadixDialog.Close>
+      )}
     </RadixDialog.Content>
   </DialogPortal>
 ));
