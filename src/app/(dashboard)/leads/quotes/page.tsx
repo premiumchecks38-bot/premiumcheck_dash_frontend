@@ -206,78 +206,58 @@ export default function QuoteRequestsPage() {
             {quotes.map((quote) => (
               <div
                 key={quote.id}
-                className={cn(
-                  "flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between transition-colors hover:bg-surface-alt/50",
-                  quote.status === "new" && "bg-accent-subtle/30",
-                )}
+                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between transition-colors hover:bg-surface-alt/40"
               >
                 <div
-                  className="flex-1 cursor-pointer space-y-2 min-w-0"
+                  className="flex-1 cursor-pointer space-y-1 min-w-0"
                   onClick={() => setSelectedQuote(quote)}
                 >
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-semibold text-text text-sm">
+                  <div className="flex items-center gap-2 flex-wrap text-sm">
+                    <span className="font-semibold text-text">
                       {quote.full_name}
                     </span>
                     {quote.company_name && (
-                      <span className="flex items-center gap-1 rounded bg-surface-alt px-2 py-0.5 text-xs text-text-muted font-medium">
-                        <Building className="h-3 w-3" />
-                        {quote.company_name}
+                      <span className="text-text-muted">
+                        · {quote.company_name}
                       </span>
                     )}
                     {quote.customer_type && (
-                      <span className="rounded bg-surface-alt px-2 py-0.5 text-caption uppercase tracking-wider text-text-subtle font-semibold">
-                        {quote.customer_type}
+                      <span className="text-xs text-text-subtle font-mono">
+                        ({quote.customer_type.replace(/_/g, " ").toLowerCase()})
                       </span>
                     )}
-                    <StatusBadge kind="lead" status={quote.status} />
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs text-text-muted flex-wrap">
+                  <div className="flex items-center gap-2 text-xs text-text-muted flex-wrap">
                     <span className="font-mono">{quote.email}</span>
-                    {quote.phone && (
-                      <span className="flex items-center gap-1 font-mono">
-                        <Phone className="h-3 w-3" /> {quote.phone}
-                      </span>
-                    )}
-                    {quote.postcode && (
-                      <span className="flex items-center gap-1 font-mono font-medium text-text">
-                        <MapPin className="h-3 w-3 text-accent" /> {quote.postcode}
-                      </span>
-                    )}
-                    {quote.property_count && quote.property_count > 1 && (
-                      <span className="font-medium text-text">
-                        {quote.property_count} properties
-                      </span>
-                    )}
+                    {quote.phone && <span>· {quote.phone}</span>}
+                    {quote.postcode && <span className="font-medium text-text">· {quote.postcode}</span>}
+                    {quote.property_count && quote.property_count > 1 ? (
+                      <span>· {quote.property_count} properties</span>
+                    ) : null}
                   </div>
 
-                  {/* Services Requested */}
+                  {/* Services Requested - clean text */}
                   {quote.services_requested && quote.services_requested.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                      {quote.services_requested.map((svc) => (
-                        <span
-                          key={svc}
-                          className="inline-flex items-center gap-1 rounded-md bg-surface-alt border border-border-subtle px-2 py-0.5 text-caption font-medium text-text"
-                        >
-                          <Wrench className="h-3 w-3 text-accent" />
-                          {svc.replace(/_/g, " ").toUpperCase()}
-                        </span>
-                      ))}
+                    <div className="text-xs text-text-subtle pt-0.5">
+                      <span className="text-text-muted">Services: </span>
+                      <span className="font-medium text-text">
+                        {quote.services_requested.map((s) => s.replace(/_/g, " ")).join(", ")}
+                      </span>
                     </div>
                   )}
 
                   {quote.message && (
-                    <p className="line-clamp-2 text-xs text-text-muted leading-relaxed italic">
-                      "{quote.message}"
+                    <p className="line-clamp-1 text-xs text-text-muted italic pt-0.5">
+                      &quot;{quote.message}&quot;
                     </p>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3 text-xs shrink-0 border-t border-border sm:border-t-0 pt-3 sm:pt-0">
+                <div className="flex items-center justify-between sm:justify-end gap-3 text-xs shrink-0 pt-2 sm:pt-0">
                   <div className="text-right text-text-muted font-mono text-caption">
                     <div>{formatDate(quote.created_at, "short")}</div>
-                    <div className="opacity-80">{formatTime(quote.created_at)}</div>
+                    <div className="opacity-70">{formatTime(quote.created_at)}</div>
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -288,7 +268,7 @@ export default function QuoteRequestsPage() {
                         onChange={(e) =>
                           handleStatusChange(quote.id, e.target.value as QuoteRequestStatus)
                         }
-                        className="rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-text focus:outline-none focus:ring-1 focus:ring-accent"
+                        className="h-8 rounded-md border border-border bg-background px-2 text-xs font-medium text-text focus:outline-none cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <option value="new">New</option>
@@ -306,7 +286,7 @@ export default function QuoteRequestsPage() {
                       title="Convert to booking"
                       disabled={convertingId === quote.id}
                       onClick={() => handleConvertToBooking(quote)}
-                      className="hidden sm:inline-flex"
+                      className="hidden sm:inline-flex h-8 text-xs font-medium"
                     >
                       <CalendarPlus className="mr-1.5 h-3.5 w-3.5 text-accent" />
                       Book
@@ -318,9 +298,10 @@ export default function QuoteRequestsPage() {
                       size="sm"
                       asChild
                       title="View full quote details"
+                      className="h-8 w-8 p-0 text-text-muted hover:text-text"
                     >
                       <Link href={`/leads/quotes/${quote.id}`}>
-                        <ExternalLink className="h-4 w-4" />
+                        <ExternalLink className="h-3.5 w-3.5" />
                       </Link>
                     </Button>
                   </div>

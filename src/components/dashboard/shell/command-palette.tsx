@@ -7,19 +7,17 @@ import {
   Calendar,
   CreditCard,
   FileText,
-  FolderOpen,
+  HardHat,
   HelpCircle,
   LayoutDashboard,
   Layers,
-  Mail,
   MapPin,
   MessageSquare,
   Search,
-  Settings,
-  Shield,
   Star,
   Tag,
   Users,
+  X,
 } from "lucide-react";
 
 import { useSessionUser } from "@/components/dashboard/session-context";
@@ -49,18 +47,13 @@ const COMMANDS: NavCommand[] = [
   { title: "Prices and VAT", category: "Catalog", href: "/prices", page: "prices", icon: Tag },
   { title: "Coverage areas", category: "Catalog", href: "/areas", page: "areas", icon: MapPin },
   { title: "Availability and slots", category: "Catalog", href: "/availability", page: "availability", icon: Calendar },
-  { title: "Engineers and Inspectors", category: "Catalog", href: "/availability?tab=engineers", page: "availability", icon: Users },
+  { title: "Engineers and Inspectors", category: "Catalog", href: "/engineers", page: "availability", icon: HardHat },
   { title: "Blog and Compliance Hub", category: "Content", href: "/blog", page: "blogs", icon: BookOpen },
-  { title: "Pages and CMS sections", category: "Content", href: "/pages", page: "pages", icon: FileText },
   { title: "FAQs", category: "Content", href: "/faqs", page: "faqs", icon: HelpCircle },
-  { title: "Media library", category: "Content", href: "/media", page: "media", icon: FolderOpen },
   { title: "Quote requests", category: "Bookings", href: "/leads/quotes", page: "leads", icon: FileText },
   { title: "Contact enquiries", category: "Bookings", href: "/leads", page: "leads", icon: MessageSquare },
 
   { title: "Team members", category: "Admin", href: "/team", page: "team", icon: Users },
-  { title: "Settings", category: "Admin", href: "/settings", page: "settings", icon: Settings },
-  { title: "Audit log", category: "Admin", href: "/audit-log", page: "audit_logs", icon: Shield },
-  { title: "Email log", category: "Admin", href: "/email-log", page: "audit_logs", icon: Mail },
 ];
 
 export function CommandPalette({
@@ -110,24 +103,29 @@ export function CommandPalette({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden shadow-2xl border-dashboard-border">
+      <DialogContent hideClose className="max-w-lg p-0 overflow-hidden shadow-2xl border-dashboard-border">
         <DialogHeader className="sr-only">
           <DialogTitle>Command Palette</DialogTitle>
         </DialogHeader>
 
-        <div className="flex items-center border-b border-dashboard-border px-3">
-          <Search className="h-4 w-4 text-dashboard-muted mr-2 flex-shrink-0" />
+        <div className="flex items-center border-b border-dashboard-border px-3.5">
+          <Search className="h-4 w-4 text-dashboard-muted mr-2.5 flex-shrink-0" />
           <input
             autoFocus
             type="text"
             placeholder="Type a page name or section to jump..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="h-12 w-full bg-transparent text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none"
+            className="h-12 w-full bg-transparent pr-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none"
           />
-          <kbd className="hidden sm:inline-block rounded bg-dashboard-surface px-1.5 py-0.5 text-[10px] font-mono font-medium text-dashboard-muted border border-dashboard-border">
-            ESC
-          </kbd>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            title="Close"
+            className="flex-shrink-0 rounded-md p-1.5 text-dashboard-muted transition-colors hover:bg-dashboard-surface hover:text-dashboard-text cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
         <div className="max-h-80 overflow-y-auto p-2 space-y-1">

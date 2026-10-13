@@ -9,8 +9,6 @@ import { SelectField, TextField, CheckField } from "@/components/dashboard/conte
 import { SlugField } from "@/components/dashboard/content/slug-field";
 import { SortableList, reorderPayload } from "@/components/dashboard/content/sortable-list";
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
-import { ImageField, type ImageValue } from "@/components/dashboard/media/image-field";
-import { useImageById } from "@/components/dashboard/media/use-image";
 import { usePermission } from "@/components/dashboard/session-context";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { useSave } from "@/components/dashboard/use-save";
@@ -175,7 +173,6 @@ interface CategoryForm {
   slug: string;
   description: string;
   icon_key: string;
-  image: ImageValue | null;
 }
 
 function CategoryDialog({
@@ -187,19 +184,15 @@ function CategoryDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const image = useImageById(category?.image_id);
   const initial: CategoryForm = {
     name: category?.name ?? "",
     slug: category?.slug ?? "",
     description: category?.description ?? "",
     icon_key: category?.icon_key ?? "",
-    image: null,
   };
   const [form, setForm] = React.useState<CategoryForm>(initial);
-  const [imageTouched, setImageTouched] = React.useState(false);
   const save = useSave();
-  const currentImage = imageTouched ? form.image : image;
-  const dirty = isDirty({ ...initial, image: null }, { ...form, image: null }) || imageTouched;
+  const dirty = isDirty(initial, form);
   useUnsavedChanges(dirty);
 
   const submit = async () => {
@@ -211,7 +204,6 @@ function CategoryDialog({
       ...cleanDeep({ name: form.name.trim(), description: form.description.trim() || null }),
       slug: form.slug || null,
       icon_key: form.icon_key || null,
-      image_id: currentImage?.id ?? null,
     };
     const result = await save.run(
       () =>
@@ -268,16 +260,6 @@ function CategoryDialog({
             onChange={(icon_key) => setForm({ ...form, icon_key })}
             options={ICON_KEYS.map((i) => ({ value: i.value, label: i.label }))}
             placeholder="No icon"
-          />
-          <ImageField
-            id="category-image"
-            label="Image"
-            folder="categories"
-            value={currentImage}
-            onChange={(value) => {
-              setImageTouched(true);
-              setForm({ ...form, image: value });
-            }}
           />
         </div>
         <DialogFooter>

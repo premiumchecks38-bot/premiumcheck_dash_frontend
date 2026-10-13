@@ -39,7 +39,6 @@ import { admin } from "@/lib/client/api";
 import { actionErrorMessage, errorMessage } from "@/lib/client/errors";
 import { cn } from "@/lib/utils/cn";
 import { formatDate } from "@/lib/utils/format";
-import { EngineersPanel } from "@/components/dashboard/availability/engineers-panel";
 
 interface AppointmentWindow {
   id: string;
@@ -241,7 +240,6 @@ function AvailabilityPageContent() {
           <TabsTrigger value="schedule">Weekly schedule</TabsTrigger>
           <TabsTrigger value="blocked">Blocked dates ({blockedDates.length})</TabsTrigger>
           <TabsTrigger value="preview">14-Day preview</TabsTrigger>
-          <TabsTrigger value="engineers">Engineers</TabsTrigger>
         </TabsList>
 
         {/* Weekly Schedule Tab */}
@@ -439,11 +437,6 @@ function AvailabilityPageContent() {
               ))}
             </div>
           )}
-        </TabsContent>
-
-        {/* Engineers Tab */}
-        <TabsContent value="engineers" className="space-y-4">
-          <EngineersPanel />
         </TabsContent>
       </Tabs>
 

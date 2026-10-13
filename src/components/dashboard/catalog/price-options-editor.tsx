@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { SortableList, reorderPayload } from "@/components/dashboard/content/sortable-list";
@@ -15,7 +15,15 @@ import { Input } from "@/components/ui/input";
 import type { PriceOption, PricingType } from "@/lib/api/schemas";
 import { admin } from "@/lib/client/api";
 import { actionErrorMessage } from "@/lib/client/errors";
-import { grossPence, priceText, readPrice, STANDARD_VAT_BP, VAT_RATES, vatPence } from "@/lib/catalog/price";
+import {
+  grossPence,
+  priceText,
+  readPrice,
+  STANDARD_VAT_BP,
+  VAT_RATES,
+  parseLabelWithWas,
+  formatLabelWithWas,
+} from "@/lib/catalog/price";
 import { cleanText } from "@/lib/text/clean";
 import { cn } from "@/lib/utils/cn";
 
@@ -25,6 +33,7 @@ interface Row {
   key: string;
   id: string | null;
   label: string;
+  was_price: string;
   price: string;
   vat_rate_bp: number;
   pricing_type: PricingType;
@@ -35,10 +44,12 @@ interface Row {
 }
 
 function rowOf(option: PriceOption): Row {
+  const { cleanLabel, wasPrice } = parseLabelWithWas(option.label);
   return {
     key: option.id,
     id: option.id,
-    label: option.label,
+    label: cleanLabel,
+    was_price: wasPrice,
     price: priceText(option.price_pence),
     vat_rate_bp: option.vat_rate_bp,
     pricing_type: option.pricing_type,
@@ -64,8 +75,9 @@ function rowErrors(row: Row): Partial<Record<keyof Row, string>> {
 }
 
 function payload(row: Row) {
+  const combinedLabel = formatLabelWithWas(row.label.trim(), row.was_price);
   return {
-    label: cleanText(row.label.trim()),
+    label: cleanText(combinedLabel),
     price_pence: readPrice(row.price).pence ?? 0,
     vat_rate_bp: row.vat_rate_bp,
     pricing_type: row.pricing_type,
@@ -76,14 +88,6 @@ function payload(row: Row) {
   };
 }
 
-const cellInput = "min-h-9 px-2 py-1 text-small";
-
-/**
- * Price options of a service as an editable table: label, price excluding VAT typed in
- * pounds (stored in pence), VAT rate, the price including VAT worked out live, pricing type,
- * quantities, property type and whether it is offered. Rows can be added, removed and dragged
- * into order; "Save price options" sends every change.
- */
 export function PriceOptionsEditor({
   serviceId,
   options,
@@ -125,6 +129,7 @@ export function PriceOptionsEditor({
         key: `new-${String(Date.now())}`,
         id: null,
         label: "",
+        was_price: "",
         price: "",
         vat_rate_bp: STANDARD_VAT_BP,
         pricing_type: "fixed",
@@ -134,6 +139,73 @@ export function PriceOptionsEditor({
         is_active: true,
       },
     ]);
+
+  const addBedroomTiers = () => {
+    const now = Date.now();
+    setRows((list) => [
+      ...list,
+      {
+        key: `new-${now}-1`,
+        id: null,
+        label: "Studio / 1 Bedroom Property",
+        was_price: "120",
+        price: "99",
+        vat_rate_bp: STANDARD_VAT_BP,
+        pricing_type: "fixed",
+        min_quantity: "1",
+        max_quantity: "",
+        property_type_id: "",
+        is_active: true,
+      },
+      {
+        key: `new-${now}-2`,
+        id: null,
+        label: "2-3 Bedroom Property",
+        was_price: "150",
+        price: "129",
+        vat_rate_bp: STANDARD_VAT_BP,
+        pricing_type: "fixed",
+        min_quantity: "1",
+        max_quantity: "",
+        property_type_id: "",
+        is_active: true,
+      },
+      {
+        key: `new-${now}-3`,
+        id: null,
+        label: "4-5 Bedroom Property",
+        was_price: "199",
+        price: "169",
+        vat_rate_bp: STANDARD_VAT_BP,
+        pricing_type: "fixed",
+        min_quantity: "1",
+        max_quantity: "",
+        property_type_id: "",
+        is_active: true,
+      },
+    ]);
+    toast.success("Added 3 bedroom packages with promotional rates.");
+  };
+
+  const addFixedPrice = () => {
+    setRows((list) => [
+      ...list,
+      {
+        key: `new-${Date.now()}`,
+        id: null,
+        label: "Standard Compliance Certificate",
+        was_price: "95",
+        price: "79",
+        vat_rate_bp: STANDARD_VAT_BP,
+        pricing_type: "fixed",
+        min_quantity: "1",
+        max_quantity: "",
+        property_type_id: "",
+        is_active: true,
+      },
+    ]);
+    toast.success("Added fixed price package.");
+  };
 
   const save = async () => {
     setShowErrors(true);
@@ -175,16 +247,44 @@ export function PriceOptionsEditor({
   return (
     <div className="space-y-4" data-testid="price-options">
       {failure ? <Alert variant="error">{failure}</Alert> : null}
-      <div className="hidden grid-cols-12 gap-2 px-11 font-body text-caption font-semibold text-text-muted lg:grid" aria-hidden="true">
-        <span className="col-span-3">Label</span>
-        <span className="col-span-1">Ex VAT (£)</span>
-        <span className="col-span-2">VAT</span>
-        <span className="col-span-1">Inc VAT</span>
-        <span className="col-span-1">Pricing</span>
-        <span className="col-span-1">Min / max</span>
-        <span className="col-span-2">Property type</span>
-        <span className="col-span-1">Offered</span>
-      </div>
+
+      {/* Presets and Add Option Bar */}
+      {canEdit && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-dashboard-text">Presets:</span>
+            <Button variant="outline" size="xs" onClick={addBedroomTiers}>
+              Bedroom tiers
+            </Button>
+            <Button variant="outline" size="xs" onClick={addFixedPrice}>
+              Single fixed price
+            </Button>
+          </div>
+          <Button variant="outline" size="xs" onClick={add}>
+            <Plus className="mr-1 h-3.5 w-3.5 text-accent" /> Add custom option
+          </Button>
+        </div>
+      )}
+
+      {/* When Rows Exist: Column Headers */}
+      {rows.length > 0 && (
+        <div
+          className="hidden items-center gap-3 px-3 py-1 text-[11px] font-semibold text-dashboard-muted uppercase tracking-wider lg:flex"
+          aria-hidden="true"
+        >
+          <span className="w-6 shrink-0" />
+          <span className="flex-1 min-w-[200px]">Package / Option Label</span>
+          <span className="w-24 shrink-0">Was (£)</span>
+          <span className="w-28 shrink-0">Price (£ ex VAT)</span>
+          <span className="w-24 shrink-0">VAT Rate</span>
+          <span className="w-36 shrink-0">Total inc VAT</span>
+          <span className="w-32 shrink-0">Property Type</span>
+          <span className="w-14 shrink-0 text-center">Live</span>
+          <span className="w-7 shrink-0" />
+        </div>
+      )}
+
+      {/* Drag & Drop Rows List */}
       <SortableList
         items={rows}
         getId={(r) => r.key}
@@ -195,183 +295,244 @@ export function PriceOptionsEditor({
         renderItem={(row, handle, index) => {
           const errors = showErrors ? rowErrors(row) : {};
           const price = readPrice(row.price).pence;
+          const wasPriceParsed = readPrice(row.was_price).pence;
+          const savingPence =
+            wasPriceParsed !== null && price !== null && wasPriceParsed > price
+              ? wasPriceParsed - price
+              : 0;
+          const savingPercent =
+            wasPriceParsed && savingPence > 0 ? Math.round((savingPence / wasPriceParsed) * 100) : 0;
           const n = String(index + 1);
+
           return (
             <div
               className={cn(
-                "flex items-start gap-2 rounded-md border-thin bg-background p-2 font-body text-small",
-                !row.id || changed.includes(row) ? "border-accent" : "border-border",
+                "flex items-center gap-3 rounded-lg border bg-dashboard-card p-2.5 transition-colors",
+                !row.id || changed.includes(row)
+                  ? "border-accent shadow-xs"
+                  : "border-dashboard-border hover:border-dashboard-border-strong",
               )}
               data-testid="price-option-row"
             >
-              {handle}
-              <div className="grid flex-1 grid-cols-2 gap-2 lg:grid-cols-12">
-                <div className="col-span-2 lg:col-span-3">
-                  <label className="sr-only" htmlFor={`po-label-${row.key}`}>Label of option {n}</label>
+              {/* Drag Handle */}
+              <div className="w-6 shrink-0 flex items-center justify-center text-dashboard-muted hover:text-dashboard-text cursor-grab active:cursor-grabbing">
+                {handle}
+              </div>
+
+              {/* Package Label */}
+              <div className="flex-1 min-w-[200px]">
+                <label className="sr-only" htmlFor={`po-label-${row.key}`}>
+                  Label of option {n}
+                </label>
+                <Input
+                  id={`po-label-${row.key}`}
+                  className="h-8.5 text-xs font-medium"
+                  value={row.label}
+                  placeholder="e.g. 1-2 Bedroom Flat"
+                  disabled={!canEdit}
+                  aria-invalid={errors.label ? true : undefined}
+                  onChange={(e) => update(row.key, { label: e.target.value })}
+                  onBlur={() => update(row.key, { label: cleanText(row.label) })}
+                />
+                {errors.label ? <p className="text-[10px] text-error-text mt-0.5">{errors.label}</p> : null}
+              </div>
+
+              {/* Was Price */}
+              <div className="w-24 shrink-0">
+                <label className="sr-only" htmlFor={`po-was-${row.key}`}>
+                  Original was price, option {n}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-dashboard-muted">£</span>
                   <Input
-                    id={`po-label-${row.key}`}
-                    className={cellInput}
-                    value={row.label}
-                    placeholder="For example Up to 3 bedrooms"
+                    id={`po-was-${row.key}`}
+                    className="h-8.5 pl-6 text-xs tabular-nums text-dashboard-muted line-through"
+                    inputMode="decimal"
+                    placeholder="Was"
+                    value={row.was_price}
                     disabled={!canEdit}
-                    aria-invalid={errors.label ? true : undefined}
-                    onChange={(e) => update(row.key, { label: e.target.value })}
-                    onBlur={() => update(row.key, { label: cleanText(row.label) })}
+                    onChange={(e) => update(row.key, { was_price: e.target.value })}
                   />
-                  {errors.label ? <p className="text-caption text-error-text">{errors.label}</p> : null}
                 </div>
-                <div className="lg:col-span-1">
-                  <label className="sr-only" htmlFor={`po-price-${row.key}`}>Price excluding VAT in pounds, option {n}</label>
+              </div>
+
+              {/* Price ex VAT */}
+              <div className="w-28 shrink-0">
+                <label className="sr-only" htmlFor={`po-price-${row.key}`}>
+                  Price ex VAT, option {n}
+                </label>
+                <div className="relative">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-dashboard-text">£</span>
                   <Input
                     id={`po-price-${row.key}`}
-                    className={cn(cellInput, "tabular-nums")}
+                    className="h-8.5 pl-6 text-xs tabular-nums font-bold text-dashboard-text focus:border-dashboard-primary"
                     inputMode="decimal"
+                    placeholder="Price"
                     value={row.price}
                     disabled={!canEdit}
                     aria-invalid={errors.price ? true : undefined}
                     onChange={(e) => update(row.key, { price: e.target.value })}
                     data-testid="po-price"
                   />
-                  {errors.price ? <p className="text-caption text-error-text">{errors.price}</p> : null}
                 </div>
-                <div className="lg:col-span-2">
-                  <label className="sr-only" htmlFor={`po-vat-${row.key}`}>VAT rate, option {n}</label>
-                  <select
-                    id={`po-vat-${row.key}`}
-                    className="h-9 w-full rounded-md border-thin border-border bg-background px-2 text-small"
-                    value={row.vat_rate_bp}
-                    disabled={!canEdit}
-                    onChange={(e) => update(row.key, { vat_rate_bp: Number(e.target.value) })}
-                  >
-                    {VAT_RATES.map((r) => (
-                      <option key={r.value} value={r.value}>{r.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <p className="flex items-center font-semibold tabular-nums lg:col-span-1" aria-live="polite" data-testid="po-inc-vat">
-                  {price === null ? (
-                    <span className="text-text-muted">-</span>
-                  ) : (
-                    <span title={`VAT ${priceText(vatPence(price, row.vat_rate_bp))}`}>
-                      <span className="sr-only">Including VAT </span>
+                {errors.price ? <p className="text-[10px] text-error-text mt-0.5">{errors.price}</p> : null}
+              </div>
+
+              {/* VAT Rate */}
+              <div className="w-24 shrink-0">
+                <select
+                  id={`po-vat-${row.key}`}
+                  className="h-8.5 w-full rounded-md border border-dashboard-border bg-dashboard-surface px-2 text-xs text-dashboard-text focus:outline-none focus:border-dashboard-primary"
+                  value={row.vat_rate_bp}
+                  disabled={!canEdit}
+                  onChange={(e) => update(row.key, { vat_rate_bp: Number(e.target.value) })}
+                >
+                  {VAT_RATES.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label.split(" ")[0]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Inc VAT & Savings */}
+              <div className="w-36 shrink-0 flex flex-col justify-center">
+                {price === null ? (
+                  <span className="text-xs text-dashboard-muted">-</span>
+                ) : (
+                  <div>
+                    <div className="text-xs font-bold tabular-nums text-dashboard-text">
                       <MoneyText pence={grossPence(price, row.vat_rate_bp)} />
-                    </span>
-                  )}
-                </p>
-                <div className="lg:col-span-1">
-                  <label className="sr-only" htmlFor={`po-type-${row.key}`}>Pricing, option {n}</label>
-                  <select
-                    id={`po-type-${row.key}`}
-                    className="h-9 w-full rounded-md border-thin border-border bg-background px-2 text-small"
-                    value={row.pricing_type}
-                    disabled={!canEdit}
-                    onChange={(e) => update(row.key, { pricing_type: e.target.value as PricingType })}
-                  >
-                    <option value="fixed">Fixed</option>
-                    <option value="per_item">Per item</option>
-                  </select>
-                </div>
-                <div className="flex gap-1 lg:col-span-1">
-                  <label className="sr-only" htmlFor={`po-min-${row.key}`}>Minimum quantity, option {n}</label>
-                  <Input
-                    id={`po-min-${row.key}`}
-                    className={cn(cellInput, "w-full tabular-nums")}
-                    inputMode="numeric"
-                    value={row.min_quantity}
-                    disabled={!canEdit}
-                    aria-invalid={errors.min_quantity ? true : undefined}
-                    onChange={(e) => update(row.key, { min_quantity: e.target.value })}
-                  />
-                  <label className="sr-only" htmlFor={`po-max-${row.key}`}>Maximum quantity, option {n}</label>
-                  <Input
-                    id={`po-max-${row.key}`}
-                    className={cn(cellInput, "w-full tabular-nums")}
-                    inputMode="numeric"
-                    placeholder="Any"
-                    value={row.max_quantity}
-                    disabled={!canEdit}
-                    aria-invalid={errors.max_quantity ? true : undefined}
-                    onChange={(e) => update(row.key, { max_quantity: e.target.value })}
-                  />
-                </div>
-                <div className="lg:col-span-2">
-                  <label className="sr-only" htmlFor={`po-pt-${row.key}`}>Property type, option {n}</label>
-                  <select
-                    id={`po-pt-${row.key}`}
-                    className="h-9 w-full rounded-md border-thin border-border bg-background px-2 text-small"
-                    value={row.property_type_id}
-                    disabled={!canEdit}
-                    onChange={(e) => update(row.key, { property_type_id: e.target.value })}
-                  >
-                    <option value="">Any property</option>
-                    {typeOptions.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center gap-2 lg:col-span-1">
+                      <span className="text-[10px] text-dashboard-muted font-normal ml-1">inc VAT</span>
+                    </div>
+                    {savingPence > 0 ? (
+                      <span className="inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 bg-emerald-500/10">
+                        Save £{priceText(savingPence)} ({savingPercent}% off)
+                      </span>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+
+              {/* Property Type Filter */}
+              <div className="w-32 shrink-0">
+                <select
+                  id={`po-pt-${row.key}`}
+                  className="h-8.5 w-full rounded-md border border-dashboard-border bg-dashboard-surface px-2 text-xs text-dashboard-text focus:outline-none focus:border-dashboard-primary"
+                  value={row.property_type_id}
+                  disabled={!canEdit}
+                  onChange={(e) => update(row.key, { property_type_id: e.target.value })}
+                >
+                  <option value="">Any property</option>
+                  {typeOptions.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Live Offered Checkbox */}
+              <div className="w-14 shrink-0 flex items-center justify-center">
+                <label className="inline-flex items-center cursor-pointer">
                   <input
                     id={`po-active-${row.key}`}
                     type="checkbox"
-                    className="h-4 w-4 accent-primary"
+                    className="h-4 w-4 rounded accent-primary cursor-pointer"
                     checked={row.is_active}
                     disabled={!canEdit}
                     onChange={(e) => update(row.key, { is_active: e.target.checked })}
                   />
-                  <label htmlFor={`po-active-${row.key}`} className="text-caption">
-                    <span className="sr-only">Option {n} </span>Offered
-                  </label>
-                </div>
+                  <span className="sr-only">Live</span>
+                </label>
               </div>
-              {canEdit ? (
-                <Button variant="ghost" size="xs" aria-label={`Delete option ${n}`} onClick={() => setRemoving(row)}>
-                  <Trash2 className="h-4 w-4" aria-hidden="true" />
-                </Button>
-              ) : null}
+
+              {/* Delete Button */}
+              <div className="w-7 shrink-0 flex items-center justify-end">
+                {canEdit ? (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    aria-label={`Delete option ${n}`}
+                    onClick={() => setRemoving(row)}
+                    className="text-dashboard-muted hover:text-red-500 hover:bg-red-500/10 h-7 w-7 p-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Button>
+                ) : null}
+              </div>
             </div>
           );
         }}
       />
+
+      {/* Clean Empty State */}
       {rows.length === 0 ? (
-        <p className="font-body text-small text-text-muted">
-          No price options yet. Customers cannot book a service without one.
-        </p>
-      ) : null}
-      {canEdit ? (
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={add} data-testid="add-price-option">
-            <Plus className="h-4 w-4" aria-hidden="true" /> Add a price option
-          </Button>
-          <Button
-            variant="accent"
-            size="sm"
-            disabled={!dirty}
-            loading={busy}
-            onClick={() => void save()}
-            data-testid="save-price-options"
-          >
-            Save price options
-          </Button>
-          {dirty ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setRows(options.map(rowOf));
-                setDeleted([]);
-                setShowErrors(false);
-              }}
-            >
-              Discard changes
+        <div className="rounded-xl border border-dashed border-dashboard-border bg-dashboard-surface/30 p-8 text-center space-y-3">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft text-accent">
+            <Tag className="h-5 w-5" />
+          </div>
+          <h4 className="font-heading text-sm font-semibold text-dashboard-text">
+            No price packages configured yet
+          </h4>
+          <p className="max-w-md mx-auto text-xs text-dashboard-muted leading-relaxed">
+            Customers cannot book a service without at least one price package. Choose a standard template below or create your own custom package.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            <Button variant="accent" size="sm" onClick={addBedroomTiers}>
+              Add Bedroom Tiers
             </Button>
-          ) : null}
+            <Button variant="outline" size="sm" onClick={addFixedPrice}>
+              Add Single Fixed Package
+            </Button>
+            <Button variant="ghost" size="sm" onClick={add}>
+              + Custom Option
+            </Button>
+          </div>
         </div>
       ) : null}
+
+      {/* Bottom Actions */}
+      {canEdit && rows.length > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashboard-border pt-4">
+          <Button variant="outline" size="sm" onClick={add} data-testid="add-price-option">
+            <Plus className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> Add custom option
+          </Button>
+
+          <div className="flex items-center gap-2">
+            {dirty ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setRows(options.map(rowOf));
+                  setDeleted([]);
+                  setShowErrors(false);
+                }}
+              >
+                Discard changes
+              </Button>
+            ) : null}
+
+            <Button
+              variant="accent"
+              size="sm"
+              disabled={!dirty}
+              loading={busy}
+              onClick={() => void save()}
+              data-testid="save-price-options"
+            >
+              Save price options
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       <ConfirmDialog
         open={removing !== null}
         onOpenChange={(open) => !open && setRemoving(null)}
         title="Remove this price option?"
-        description={`"${removing?.label || "New option"}" is removed when you save the price options.`}
+        description={`"${removing?.label || "New option"}" will be deleted when you save the price options.`}
         confirmLabel="Remove"
         destructive
         onConfirm={() => {

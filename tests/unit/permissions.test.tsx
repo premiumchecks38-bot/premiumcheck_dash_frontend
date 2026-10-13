@@ -79,7 +79,6 @@ describe("sidebar filtering", () => {
   it("shows everything to the owner", () => {
     const hrefs = sidebarHrefs(user("owner"));
     expect(hrefs).toContain("/team");
-    expect(hrefs).toContain("/email-log");
     expect(hrefs).toContain("/payments/disputes");
   });
 
@@ -112,12 +111,7 @@ describe("sidebar filtering", () => {
   it("gives an editor only content pages, and a home page they can open", () => {
     expect(sidebarHrefs(editor)).toEqual([
       "/blog",
-      "/pages",
       "/faqs",
-      "/reviews",
-      "/media",
-      "/seo",
-      "/seo/redirects",
     ]);
     expect(homeFor(editor)).toBe("/blog");
     expect(homeFor(user("manager"))).toBe("/account");
