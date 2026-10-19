@@ -76,6 +76,4 @@ test("new booking prefilled from the address bar", async () => {
   );
   await expect(page.getByRole("textbox", { name: "Postcode", exact: true })).toHaveValue("AL5 2AB");
   await expect(page.getByLabel("Internal notes")).toHaveValue("Called about a quote");
-  // Owners can override a full window.
-  await expect(page.getByText("Allow a full or closed window (override capacity)")).toBeVisible();
 });

@@ -57,7 +57,7 @@ const DEFAULT_SETTINGS = {
     google_business: "",
   },
   booking: {
-    lead_time_hours: 24,
+    lead_time_hours: 0,
     horizon_days: 60,
     slot_hold_minutes: 15,
     appointment_reminder_hours: 24,

@@ -13,7 +13,7 @@ import { londonToday } from "@/lib/dates";
 import { cn } from "@/lib/utils/cn";
 
 /**
- * A date and the windows of that day with places left (reschedule and phone bookings).
+ * A date and the windows of that day (reschedule and phone bookings). Blocked dates have none.
  * Reports the chosen window's code and its start time for the API.
  */
 export function WindowPicker({
@@ -23,7 +23,6 @@ export function WindowPicker({
   code,
   onCodeChange,
   serviceIds,
-  override,
   current,
 }: {
   idPrefix: string;
@@ -32,7 +31,6 @@ export function WindowPicker({
   code: string | null;
   onCodeChange: (code: string | null, start: string | null) => void;
   serviceIds: string[];
-  override: boolean;
   current?: { date: string; code: string } | null;
 }) {
   const today = londonToday();
@@ -45,7 +43,7 @@ export function WindowPicker({
     enabled: Boolean(date),
   });
   const availability = day.data?.[0];
-  const cards = windowCards(availability, { override, today, current });
+  const cards = windowCards(availability, { today, current });
 
   return (
     <div className="space-y-3">
@@ -103,12 +101,9 @@ export function WindowPicker({
                     />
                     <span className="font-semibold">{card.label}</span>
                   </span>
-                  <span className="pl-6 text-caption text-text-muted">
-                    {card.placesLeft === 1
-                      ? "1 place left"
-                      : `${String(card.placesLeft)} places left`}
-                    {card.note ? `, ${card.note.toLowerCase()}` : ""}
-                  </span>
+                  {card.note ? (
+                    <span className="pl-6 text-caption text-text-muted">{card.note}</span>
+                  ) : null}
                 </label>
               );
             })}

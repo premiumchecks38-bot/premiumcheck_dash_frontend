@@ -1,15 +1,12 @@
 /**
- * Window cards for rescheduling and phone bookings, from the availability endpoint. A card is
- * selectable when the day is open and there are places left; owners and admins can override
- * a full window (the backend checks the role again).
+ * Window cards for rescheduling and phone bookings, from the availability endpoint. Every
+ * window of a date that is not in the past is selectable; a blocked date has no windows.
  */
 
 export interface AvailabilitySlot {
   code: string;
   start: string;
   label: string;
-  capacity: number;
-  places_left: number;
 }
 
 export interface AvailabilityDay {
@@ -22,10 +19,8 @@ export interface AvailabilityDay {
 export interface WindowCard {
   code: string;
   label: string;
-  placesLeft: number;
-  capacity: number;
   selectable: boolean;
-  /** Why it cannot be chosen, or a warning when an override is used. */
+  /** Why it cannot be chosen. */
   note: string | null;
   current: boolean;
 }
@@ -33,7 +28,6 @@ export interface WindowCard {
 export function windowCards(
   day: AvailabilityDay | undefined,
   options: {
-    override?: boolean;
     today: string;
     /** The booking's current date and window: shown, never offered as a change. */
     current?: { date: string; code: string } | null;
@@ -47,26 +41,12 @@ export function windowCards(
     if (day.date < options.today) {
       selectable = false;
       note = "In the past";
-    } else if (day.blocked) {
-      selectable = Boolean(options.override);
-      note = day.blocked_reason ? `Closed: ${day.blocked_reason}` : "Closed";
-    } else if (slot.places_left <= 0) {
-      selectable = Boolean(options.override);
-      note = options.override ? "Full: booking over capacity" : "Full";
     }
     if (current) {
       selectable = false;
       note = "Current appointment";
     }
-    return {
-      code: slot.code,
-      label: slot.label,
-      placesLeft: Math.max(0, slot.places_left),
-      capacity: slot.capacity,
-      selectable,
-      note,
-      current,
-    };
+    return { code: slot.code, label: slot.label, selectable, note, current };
   });
 }
 

@@ -229,9 +229,13 @@ function PaymentLinkDialog({
         </DialogHeader>
         {failure ? <Alert variant="error">{failure}</Alert> : null}
         {link ? (
-          <div className="space-y-3" data-testid="payment-link-result">
-            <div className="flex items-center gap-2 rounded-md border-thin border-border bg-surface p-3">
-              <code className="min-w-0 flex-1 truncate font-mono text-caption">{link.url}</code>
+          // min-w-0: a grid item otherwise grows to the full Stripe URL and pushes the
+          // copy button and footer out of the dialog.
+          <div className="min-w-0 space-y-3" data-testid="payment-link-result">
+            <div className="flex min-w-0 items-center gap-2 overflow-hidden rounded-md border-thin border-border bg-surface p-3">
+              <code className="min-w-0 flex-1 truncate font-mono text-caption" title={link.url}>
+                {link.url}
+              </code>
               <CopyButton value={link.url} label="Copy payment link" />
             </div>
             <p className="font-body text-caption text-text-muted">

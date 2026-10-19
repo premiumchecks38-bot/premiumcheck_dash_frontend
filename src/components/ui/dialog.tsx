@@ -39,7 +39,7 @@ export const DialogContent = React.forwardRef<
     <RadixDialog.Content
       ref={ref}
       className={cn(
-        "fixed top-1/2 left-1/2 z-modal grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border-thin border-border bg-background p-6 shadow-lg duration-normal",
+        "fixed top-1/2 left-1/2 z-modal grid w-full max-w-lg grid-cols-[minmax(0,1fr)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border-thin border-border bg-background p-6 shadow-lg duration-normal",
         "data-[state=closed]:animate-fade-out data-[state=open]:animate-scale-in",
         "focus-visible:outline-none",
         className,

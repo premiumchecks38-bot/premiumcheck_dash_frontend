@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { selectClass } from "@/components/dashboard/field-styles";
 import { FormSection } from "@/components/dashboard/form-section";
 import { MoneyText } from "@/components/dashboard/money-text";
-import { usePermission, useSessionUser } from "@/components/dashboard/session-context";
+import { usePermission } from "@/components/dashboard/session-context";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
@@ -58,7 +58,6 @@ const REPEATED_OPTION =
 export function NewBookingForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const user = useSessionUser();
   const customersAccess = usePermission("customers");
   const paymentsAccess = usePermission("payments");
   const options = useBookingOptions();
@@ -66,7 +65,6 @@ export function NewBookingForm() {
     () => readPrefill(new URLSearchParams(params.toString())),
     [params],
   );
-  const mayOverride = user.role === "owner" || user.role === "admin";
 
   // Customer
   const [mode, setMode] = React.useState<"existing" | "new">("new");
@@ -106,7 +104,6 @@ export function NewBookingForm() {
   const [date, setDate] = React.useState(londonToday());
   const [windowCode, setWindowCode] = React.useState<string | null>(null);
   const [windowStart, setWindowStart] = React.useState<string | null>(null);
-  const [override, setOverride] = React.useState(false);
   const [payment, setPayment] = React.useState<PaymentChoice>("on_inspection");
   const [offlineMethod, setOfflineMethod] = React.useState("bank_transfer");
   const [offlineReference, setOfflineReference] = React.useState("");
@@ -293,7 +290,6 @@ export function NewBookingForm() {
           start: timeOf(windowStart ?? ""),
           status: payment === "payment_link" ? "pending_payment" : "confirmed",
           payment_due: payment !== "payment_link",
-          override_capacity: mayOverride && override,
           internal_notes: notes.trim() || null,
         },
       });
@@ -734,21 +730,9 @@ export function NewBookingForm() {
               setWindowStart(start);
             }}
             serviceIds={[...new Set(lines.map((l) => l.serviceId).filter(Boolean))]}
-            override={override}
           />
           {errors.window ? (
             <p className="font-body text-small text-error-text">{errors.window}</p>
-          ) : null}
-          {mayOverride ? (
-            <label className="flex min-h-touch cursor-pointer items-center gap-3 font-body text-small">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-primary"
-                checked={override}
-                onChange={(e) => setOverride(e.target.checked)}
-              />
-              Allow a full or closed window (override capacity)
-            </label>
           ) : null}
         </div>
       </FormSection>

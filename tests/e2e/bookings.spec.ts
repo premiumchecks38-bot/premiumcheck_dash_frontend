@@ -218,12 +218,12 @@ test("booking detail: assign an engineer and reschedule", async () => {
   await expect(page.getByTestId("assigned-engineer")).toContainText("Not assigned");
 
   await page.getByTestId("booking-actions").click();
-  await page.getByRole("menuitem", { name: "Assign or change engineer" }).click();
-  const engineerDialog = page.getByRole("dialog", { name: "Assign an engineer" });
-  await engineerDialog.getByLabel("Engineer").selectOption({ label: "Priya Patel" });
+  await page.getByRole("menuitem", { name: "Assign engineers" }).click();
+  const engineerDialog = page.getByRole("dialog", { name: "Assign engineers" });
+  await engineerDialog.getByLabel("Priya Patel").check();
   await expectAccessible(page);
   await engineerDialog.getByTestId("assign-engineer-save").click();
-  await expect(page.getByText("Priya Patel assigned.")).toBeVisible();
+  await expect(page.getByText("Assigned: Priya Patel.")).toBeVisible();
   await expect(page.getByTestId("assigned-engineer")).toContainText("Priya Patel");
 
   await page.getByTestId("booking-actions").click();
@@ -231,7 +231,7 @@ test("booking detail: assign an engineer and reschedule", async () => {
   const dialog = page.getByRole("dialog", { name: `Reschedule ${r.offline}` });
   await expect(dialog).toBeVisible();
   // The current window is shown but cannot be chosen again.
-  await expect(dialog.getByText("current appointment")).toBeVisible();
+  await expect(dialog.getByText("Current appointment")).toBeVisible();
   await chooseOpenWindow(page, "reschedule", 1);
   await expectAccessible(page);
   await dialog.getByTestId("reschedule-save").click();

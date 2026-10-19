@@ -2,12 +2,28 @@
 
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontal, Pencil, Phone, Plus, Search, Trash2, User, UserCheck, UserX } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  Phone,
+  Plus,
+  Search,
+  Trash2,
+  User,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/dashboard/confirm-dialog";
 import { CheckField, TextField } from "@/components/dashboard/content/text-field";
-import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "@/components/dashboard/primitives";
+import {
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+} from "@/components/dashboard/primitives";
 import { usePermission } from "@/components/dashboard/session-context";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { useSave } from "@/components/dashboard/use-save";
@@ -77,7 +93,7 @@ export function EngineersPanel() {
       toast.success(
         engineer.is_active
           ? `${engineer.full_name} is now inactive.`
-          : `${engineer.full_name} is now active and can be assigned to bookings.`
+          : `${engineer.full_name} is now active and can be assigned to bookings.`,
       );
       await refresh();
     } catch (err) {
@@ -120,9 +136,12 @@ export function EngineersPanel() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col gap-2 rounded-lg border border-border bg-subtle/30 p-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" aria-hidden="true" />
+      <div className="bg-subtle/30 flex flex-col gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative max-w-sm flex-1">
+          <Search
+            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-text-muted"
+            aria-hidden="true"
+          />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -132,12 +151,14 @@ export function EngineersPanel() {
         </div>
 
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
-          <span className="text-caption text-text-muted mr-1">Status:</span>
+          <span className="mr-1 text-caption text-text-muted">Status:</span>
           <button
             type="button"
             onClick={() => setFilterActive("all")}
             className={`rounded px-2.5 py-1 text-caption font-medium transition-colors ${
-              filterActive === "all" ? "bg-primary text-white" : "bg-subtle text-text hover:bg-hover"
+              filterActive === "all"
+                ? "bg-primary text-white"
+                : "bg-subtle hover:bg-hover text-text"
             }`}
           >
             All ({engineers.length})
@@ -146,7 +167,9 @@ export function EngineersPanel() {
             type="button"
             onClick={() => setFilterActive("active")}
             className={`rounded px-2.5 py-1 text-caption font-medium transition-colors ${
-              filterActive === "active" ? "bg-primary text-white" : "bg-subtle text-text hover:bg-hover"
+              filterActive === "active"
+                ? "bg-primary text-white"
+                : "bg-subtle hover:bg-hover text-text"
             }`}
           >
             Active ({engineers.filter((e) => e.is_active).length})
@@ -155,7 +178,9 @@ export function EngineersPanel() {
             type="button"
             onClick={() => setFilterActive("inactive")}
             className={`rounded px-2.5 py-1 text-caption font-medium transition-colors ${
-              filterActive === "inactive" ? "bg-primary text-white" : "bg-subtle text-text hover:bg-hover"
+              filterActive === "inactive"
+                ? "bg-primary text-white"
+                : "bg-subtle hover:bg-hover text-text"
             }`}
           >
             Inactive ({engineers.filter((e) => !e.is_active).length})
@@ -177,15 +202,17 @@ export function EngineersPanel() {
           <User className="mx-auto h-8 w-8 text-text-muted opacity-50" />
           <p className="mt-2 font-medium text-text">No engineers found</p>
           <p className="text-caption text-text-muted">
-            {search.trim() ? "Try modifying your search or filter." : "Click 'Add engineer' to register your first inspector."}
+            {search.trim()
+              ? "Try modifying your search or filter."
+              : "Click 'Add engineer' to register your first inspector."}
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="bg-card overflow-hidden rounded-lg border border-border">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-small">
               <thead>
-                <tr className="border-b border-border bg-subtle/50 text-caption font-semibold text-text-muted">
+                <tr className="bg-subtle/50 border-b border-border text-caption font-semibold text-text-muted">
                   <th className="px-4 py-3">Engineer name</th>
                   <th className="px-4 py-3">Contact details</th>
                   <th className="px-4 py-3">Qualifications / Notes</th>
@@ -198,7 +225,7 @@ export function EngineersPanel() {
                   <tr key={eng.id} className="hover:bg-hover/50 transition-colors">
                     <td className="px-4 py-3.5 font-medium text-text">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-caption">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-caption font-semibold text-primary">
                           {eng.full_name
                             .split(" ")
                             .map((n) => n[0])
@@ -215,13 +242,15 @@ export function EngineersPanel() {
                     <td className="px-4 py-3.5 text-text-muted">
                       {eng.email && <div className="text-caption">{eng.email}</div>}
                       {eng.phone && (
-                        <div className="text-caption flex items-center gap-1 font-mono">
+                        <div className="flex items-center gap-1 font-mono text-caption">
                           <Phone className="h-3 w-3" /> {eng.phone}
                         </div>
                       )}
-                      {!eng.email && !eng.phone && <span className="text-caption text-text-muted">No contact info</span>}
+                      {!eng.email && !eng.phone && (
+                        <span className="text-caption text-text-muted">No contact info</span>
+                      )}
                     </td>
-                    <td className="px-4 py-3.5 text-text-muted max-w-xs">
+                    <td className="max-w-xs px-4 py-3.5 text-text-muted">
                       {eng.notes ? (
                         <span className="line-clamp-2 text-caption">{eng.notes}</span>
                       ) : (
@@ -239,28 +268,35 @@ export function EngineersPanel() {
                       {canEdit ? (
                         <Menu>
                           <MenuTrigger asChild>
-                            <Button variant="ghost" size="xs" aria-label={`Actions for ${eng.full_name}`}>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              aria-label={`Actions for ${eng.full_name}`}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </MenuTrigger>
                           <MenuContent align="end">
                             <MenuItem onSelect={() => setEditingEngineer(eng)}>
-                              <Pencil className="h-4 w-4 mr-2" /> Edit details
+                              <Pencil className="mr-2 h-4 w-4" /> Edit details
                             </MenuItem>
                             <MenuItem onSelect={() => void handleToggleActive(eng)}>
                               {eng.is_active ? (
                                 <>
-                                  <UserX className="h-4 w-4 mr-2" /> Deactivate
+                                  <UserX className="mr-2 h-4 w-4" /> Deactivate
                                 </>
                               ) : (
                                 <>
-                                  <UserCheck className="h-4 w-4 mr-2" /> Activate
+                                  <UserCheck className="mr-2 h-4 w-4" /> Activate
                                 </>
                               )}
                             </MenuItem>
                             <MenuSeparator />
-                            <MenuItem className="text-error-text" onSelect={() => setDeletingEngineer(eng)}>
-                              <Trash2 className="h-4 w-4 mr-2" /> Delete
+                            <MenuItem
+                              className="text-error-text"
+                              onSelect={() => setDeletingEngineer(eng)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" /> Delete
                             </MenuItem>
                           </MenuContent>
                         </Menu>
@@ -318,6 +354,15 @@ function EngineerDialog({
     is_active: engineer?.is_active ?? true,
   });
 
+  // Editing a field clears its error (and the summary), so a corrected value is not flagged.
+  const update = <K extends keyof EngineerFormState>(key: K, value: EngineerFormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    save.setError(null);
+    save.setFieldErrors((prev) =>
+      key in prev ? Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key)) : prev,
+    );
+  };
+
   const handleSubmit = async () => {
     if (!form.full_name.trim()) {
       save.setFieldErrors({ full_name: "Enter the engineer's name" });
@@ -337,7 +382,7 @@ function EngineerDialog({
         engineer
           ? admin(`/engineers/${engineer.id}`, { method: "PATCH", json: payload })
           : admin("/engineers", { method: "POST", json: payload }),
-      engineer ? "Engineer details updated." : "New engineer added successfully."
+      engineer ? "Engineer details updated." : "New engineer added successfully.",
     );
 
     if (ok) {
@@ -352,68 +397,66 @@ function EngineerDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEditing ? `Edit: ${engineer?.full_name}` : "Add new engineer"}</DialogTitle>
-          <DialogDescription>
-            Register certified inspectors for dispatching and scheduling appointments.
-          </DialogDescription>
+          <DialogTitle>
+            {isEditing ? `Edit ${engineer?.full_name ?? "engineer"}` : "Add engineer"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">Engineer details</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {save.error ? <Alert variant="error">{save.error}</Alert> : null}
+        <div className="space-y-3">
+          {save.error && !Object.keys(save.fieldErrors).length ? (
+            <Alert variant="error">{save.error}</Alert>
+          ) : null}
 
           <TextField
             id="eng-name"
             label="Full name"
             required
             value={form.full_name}
-            onChange={(full_name) => setForm((prev) => ({ ...prev, full_name }))}
-            placeholder="e.g. David Miller"
+            onChange={(full_name) => update("full_name", full_name)}
+            placeholder="David Miller"
             error={save.fieldErrors.full_name}
             maxLength={100}
           />
 
-          <TextField
-            id="eng-email"
-            label="Email address"
-            type="email"
-            value={form.email}
-            onChange={(email) => setForm((prev) => ({ ...prev, email }))}
-            placeholder="e.g. david.miller@example.co.uk"
-            hint="Used for notifications and dispatch alerts"
-            error={save.fieldErrors.email}
-          />
-
-          <TextField
-            id="eng-phone"
-            label="UK phone number"
-            type="tel"
-            value={form.phone}
-            onChange={(phone) => setForm((prev) => ({ ...prev, phone }))}
-            placeholder="e.g. 07123 456789 or +447123456789"
-            hint="Contact number for customers and coordination"
-            error={save.fieldErrors.phone}
-          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField
+              id="eng-phone"
+              label="Phone"
+              type="tel"
+              value={form.phone}
+              onChange={(phone) => update("phone", phone)}
+              placeholder="07123 456789"
+              error={save.fieldErrors.phone}
+            />
+            <TextField
+              id="eng-email"
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={(email) => update("email", email)}
+              placeholder="name@example.co.uk"
+              error={save.fieldErrors.email}
+            />
+          </div>
 
           <TextField
             id="eng-notes"
-            label="Certifications & Notes"
+            label="Notes"
             multiline
-            rows={3}
+            rows={2}
             maxLength={5000}
             value={form.notes}
-            onChange={(notes) => setForm((prev) => ({ ...prev, notes }))}
-            placeholder="e.g. Gas Safe Reg #123456, NICEIC Approved, covers North & East London..."
+            onChange={(notes) => update("notes", notes)}
+            placeholder="Gas Safe 123456, NICEIC"
           />
 
-          <div className="rounded-md border border-border bg-subtle/40 p-3">
-            <CheckField
-              id="eng-active"
-              label="Active for new bookings"
-              hint="Uncheck if the engineer is on leave or temporarily unavailable."
-              checked={form.is_active}
-              onChange={(is_active) => setForm((prev) => ({ ...prev, is_active }))}
-            />
-          </div>
+          <CheckField
+            id="eng-active"
+            label="Active for new bookings"
+            checked={form.is_active}
+            onChange={(is_active) => update("is_active", is_active)}
+          />
         </div>
 
         <DialogFooter className="gap-2">

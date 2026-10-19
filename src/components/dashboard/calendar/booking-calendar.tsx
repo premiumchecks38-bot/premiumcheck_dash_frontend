@@ -100,7 +100,7 @@ export function BookingCalendar() {
 
   const filtered = (events.data ?? []).filter(
     (e) =>
-      (!engineer || e.engineer_id === engineer) &&
+      (!engineer || (e.engineer_ids ?? []).includes(engineer)) &&
       (!service || (e.service_ids ?? []).includes(service)),
   );
   const grouped = groupEvents(filtered);
@@ -306,12 +306,7 @@ export function BookingCalendar() {
                         if (!items.length && !slot) return null;
                         return (
                           <div key={w.code} className="mb-1">
-                            <p className="flex justify-between font-body text-micro text-text-muted">
-                              <span>{w.code}</span>
-                              {slot && !info?.blocked && date >= today ? (
-                                <span data-testid="places-left">{slot.places_left} left</span>
-                              ) : null}
-                            </p>
+                            <p className="font-body text-micro text-text-muted">{w.code}</p>
                             <ul className="space-y-0.5">
                               {items.map((event) => (
                                 <li key={event.id}>
@@ -387,7 +382,9 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
       });
       queryClient.setQueryData(["booking", data.id], updated);
       await queryClient.invalidateQueries({ queryKey: ["calendar"] });
-      toast.success(`${updated.engineer?.name ?? "Engineer"} assigned to ${updated.reference}.`);
+      toast.success(
+        `Assigned to ${updated.reference}: ${updated.engineers.map((e) => e.name).join(", ")}.`,
+      );
       setEngineer("");
     } catch (error) {
       toast.error(errorMessage(error));
@@ -423,7 +420,10 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
               items={[
                 { label: "Property", value: `${data.address_line1}, ${data.postcode}` },
                 { label: "Services", value: data.services.join(", ") },
-                { label: "Engineer", value: data.engineer?.name ?? "Not assigned" },
+                {
+                  label: "Engineers",
+                  value: data.engineers.map((e) => e.name).join(", ") || "Not assigned",
+                },
                 {
                   label: "Phone",
                   value: data.customer.phone ? (
@@ -443,7 +443,7 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
             {canEdit && !["cancelled", "refunded", "completed", "no_show"].includes(data.status) ? (
               <div className="flex flex-wrap items-end gap-2 rounded-md border-thin border-border p-3">
                 <div className="min-w-48 flex-1">
-                  <Label htmlFor="sheet-engineer">Assign engineer</Label>
+                  <Label htmlFor="sheet-engineer">Add an engineer</Label>
                   <select
                     id="sheet-engineer"
                     className={`mt-1.5 ${selectClass}`}
@@ -451,11 +451,13 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
                     onChange={(e) => setEngineer(e.target.value)}
                   >
                     <option value="">Choose an engineer</option>
-                    {(options.data?.engineers ?? []).map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.name}
-                      </option>
-                    ))}
+                    {(options.data?.engineers ?? [])
+                      .filter((e) => !data.engineers.some((a) => a.id === e.id))
+                      .map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <Button
@@ -465,7 +467,7 @@ function BookingSheet({ id, onClose }: { id: string | null; onClose: () => void 
                   loading={busy}
                   onClick={() => void assign()}
                 >
-                  Assign
+                  Add
                 </Button>
               </div>
             ) : null}

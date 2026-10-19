@@ -66,9 +66,7 @@ export type Area = Schemas["AdminArea"];
 export type AreaCreate = Schemas["AreaCreate"];
 export type PostcodePrefix = Schemas["AdminPostcodePrefix"];
 export type AppointmentWindow = Schemas["AppointmentWindowOut"];
-export type AvailabilityRule = Schemas["AvailabilityRuleOut"];
 export type BlockedDate = Schemas["BlockedDateOut"];
-export type SlotCapacity = Schemas["SlotCapacityOut"];
 export type Engineer = Schemas["EngineerOut"];
 
 // Content
@@ -83,7 +81,6 @@ export type PageType = Schemas["PageType"];
 export type SectionTypeInfo = Schemas["SectionTypeOut"];
 export type Faq = Schemas["FaqOut"];
 export type FaqGroup = Schemas["FaqGroup"];
-export type Review = Schemas["ReviewOut"];
 export type ReviewSource = Schemas["ReviewSource"];
 export type Media = Schemas["MediaOut"];
 export type MediaFolder = Schemas["MediaFolder"];

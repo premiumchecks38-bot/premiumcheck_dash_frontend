@@ -24,7 +24,6 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from "@/components/dashboard/primitives";
-import { useSessionUser } from "@/components/dashboard/session-context";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -123,7 +122,7 @@ export function BookingActions({
             {active ? (
               <>
                 <MenuItem onSelect={() => setOpen("engineer")}>
-                  <UserCog className="h-4 w-4" aria-hidden="true" /> Assign or change engineer
+                  <UserCog className="h-4 w-4" aria-hidden="true" /> Assign engineers
                 </MenuItem>
                 <MenuItem onSelect={() => setOpen("reschedule")}>
                   <CalendarClock className="h-4 w-4" aria-hidden="true" /> Reschedule
@@ -155,7 +154,10 @@ export function BookingActions({
         </Menu>
       </div>
 
-      <EngineerDialog booking={booking} open={open === "engineer"} onClose={() => setOpen(null)} />
+      {open === "engineer" ? (
+        // Mounted only while open, so it always starts from the booking's current engineers.
+        <EngineerDialog booking={booking} open onClose={() => setOpen(null)} />
+      ) : null}
       <RescheduleDialog
         booking={booking}
         open={open === "reschedule"}
@@ -197,24 +199,34 @@ interface DialogProps {
 function EngineerDialog({ booking, open, onClose }: DialogProps) {
   const options = useBookingOptions();
   const apply = useBookingUpdate(booking);
-  const [engineer, setEngineer] = React.useState(booking.engineer?.id ?? "");
+  const assigned = booking.engineers.map((e) => e.id);
+  const [chosen, setChosen] = React.useState<string[]>(assigned);
   const [busy, setBusy] = React.useState(false);
   const [failure, setFailure] = React.useState<string | null>(null);
+  // Active engineers, plus any already on the booking who have since been deactivated.
+  const choices = [
+    ...(options.data?.engineers ?? []),
+    ...booking.engineers.filter((e) => !options.data?.engineers.some((o) => o.id === e.id)),
+  ];
+  const unchanged =
+    chosen.length === assigned.length && chosen.every((id) => assigned.includes(id));
 
-  const run = async (unassign: boolean) => {
+  const toggle = (id: string, on: boolean) =>
+    setChosen((current) => (on ? [...current, id] : current.filter((c) => c !== id)));
+
+  const save = async () => {
     setBusy(true);
     setFailure(null);
     try {
-      const updated = unassign
-        ? await admin<BookingDetail>(`/bookings/${booking.id}/unassign-engineer`, {
-            method: "POST",
-          })
-        : await admin<BookingDetail>(`/bookings/${booking.id}/assign-engineer`, {
-            json: { engineer_id: engineer },
-          });
+      const updated = await admin<BookingDetail>(`/bookings/${booking.id}/engineers`, {
+        method: "PUT",
+        json: { engineer_ids: chosen },
+      });
       await apply(updated);
       toast.success(
-        unassign ? "Engineer removed." : `${updated.engineer?.name ?? "Engineer"} assigned.`,
+        updated.engineers.length
+          ? `Assigned: ${updated.engineers.map((e) => e.name).join(", ")}.`
+          : "Engineers removed.",
       );
       onClose();
     } catch (error) {
@@ -228,41 +240,48 @@ function EngineerDialog({ booking, open, onClose }: DialogProps) {
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Assign an engineer</DialogTitle>
-          <DialogDescription>Who carries out {booking.reference}.</DialogDescription>
+          <DialogTitle>Assign engineers</DialogTitle>
+          <DialogDescription>
+            Who carries out {booking.reference}. Choose one or more.
+          </DialogDescription>
         </DialogHeader>
         {failure ? <Alert variant="error">{failure}</Alert> : null}
-        <div>
-          <Label htmlFor="assign-engineer">Engineer</Label>
-          <select
-            id="assign-engineer"
-            className={`mt-1.5 ${selectClass}`}
-            value={engineer}
-            onChange={(event) => setEngineer(event.target.value)}
-          >
-            <option value="">Choose an engineer</option>
-            {(options.data?.engineers ?? []).map((e) => (
-              <option key={e.id} value={e.id}>
+        <fieldset className="max-h-72 space-y-1 overflow-y-auto" data-testid="assign-engineers">
+          <legend className="sr-only">Engineers</legend>
+          {choices.length === 0 ? (
+            <p className="font-body text-small text-text-muted">
+              No active engineers. Add them on the Engineers page.
+            </p>
+          ) : (
+            choices.map((e) => (
+              <label
+                key={e.id}
+                className="flex min-h-touch cursor-pointer items-center gap-3 rounded-md px-2 font-body text-small hover:bg-surface"
+              >
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={chosen.includes(e.id)}
+                  onChange={(event) => toggle(e.id, event.target.checked)}
+                />
                 {e.name}
-              </option>
-            ))}
-          </select>
-        </div>
+              </label>
+            ))
+          )}
+        </fieldset>
         <DialogFooter>
-          {booking.engineer ? (
-            <Button variant="ghost" size="sm" disabled={busy} onClick={() => void run(true)}>
-              Remove engineer
-            </Button>
-          ) : null}
+          <Button variant="outline" size="sm" disabled={busy} onClick={onClose}>
+            Cancel
+          </Button>
           <Button
             variant="accent"
             size="sm"
             loading={busy}
-            disabled={!engineer || engineer === booking.engineer?.id}
-            onClick={() => void run(false)}
+            disabled={unchanged || (chosen.length === 0 && booking.status !== "scheduled")}
+            onClick={() => void save()}
             data-testid="assign-engineer-save"
           >
-            Save
+            {chosen.length === 0 && assigned.length ? "Remove engineers" : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -271,9 +290,7 @@ function EngineerDialog({ booking, open, onClose }: DialogProps) {
 }
 
 function RescheduleDialog({ booking, open, onClose }: DialogProps) {
-  const user = useSessionUser();
   const apply = useBookingUpdate(booking);
-  const mayOverride = user.role === "owner" || user.role === "admin";
   const current = booking.appointment.date
     ? { date: booking.appointment.date, code: booking.appointment.window_code ?? "" }
     : null;
@@ -284,7 +301,6 @@ function RescheduleDialog({ booking, open, onClose }: DialogProps) {
   );
   const [code, setCode] = React.useState<string | null>(null);
   const [start, setStart] = React.useState<string | null>(null);
-  const [override, setOverride] = React.useState(false);
   const [note, setNote] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [failure, setFailure] = React.useState<string | null>(null);
@@ -301,7 +317,6 @@ function RescheduleDialog({ booking, open, onClose }: DialogProps) {
         json: {
           date,
           start: timeOf(start),
-          override_capacity: override,
           note: note.trim() || null,
         },
       });
@@ -339,20 +354,8 @@ function RescheduleDialog({ booking, open, onClose }: DialogProps) {
             setStart(nextStart);
           }}
           serviceIds={serviceIds}
-          override={override}
           current={current}
         />
-        {mayOverride ? (
-          <label className="flex min-h-touch cursor-pointer items-center gap-3 font-body text-small">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-primary"
-              checked={override}
-              onChange={(event) => setOverride(event.target.checked)}
-            />
-            Allow a full or closed window (override capacity)
-          </label>
-        ) : null}
         <FormField id="reschedule-note" label="Note (optional)">
           <Input
             id="reschedule-note"

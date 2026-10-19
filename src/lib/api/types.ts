@@ -253,7 +253,7 @@ export interface paths {
         };
         /**
          * Availability Slots
-         * @description Return the appointment windows of a date (AM, PM) with places left, London time.
+         * @description Return the appointment windows of a date (AM, PM), London time. Blocked dates have none.
          */
         get: operations["availability_slots_api_v1_public_availability_slots_get"];
         put?: never;
@@ -1830,7 +1830,7 @@ export interface paths {
         };
         /**
          * Booking Availability
-         * @description Each day's windows with places left (rescheduling, phone bookings and the calendar).
+         * @description Each day's windows, or blocked (rescheduling, phone bookings and the calendar).
          */
         get: operations["booking_availability_api_v1_admin_bookings_availability_get"];
         put?: never;
@@ -1925,6 +1925,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/bookings/{booking_id}/engineers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Engineers
+         * @description Set every engineer of the booking (an empty list removes them all).
+         *
+         *     A confirmed booking becomes scheduled; a scheduled one left with none is confirmed again.
+         */
+        put: operations["set_engineers_api_v1_admin_bookings__booking_id__engineers_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/bookings/{booking_id}/assign-engineer": {
         parameters: {
             query?: never;
@@ -1936,7 +1958,7 @@ export interface paths {
         put?: never;
         /**
          * Assign Engineer
-         * @description Assign an engineer. A confirmed booking becomes scheduled.
+         * @description Add an engineer (others stay). A confirmed booking becomes scheduled.
          */
         post: operations["assign_engineer_api_v1_admin_bookings__booking_id__assign_engineer_post"];
         delete?: never;
@@ -1956,7 +1978,7 @@ export interface paths {
         put?: never;
         /**
          * Unassign Engineer
-         * @description Remove the engineer. The booking goes back to confirmed.
+         * @description Remove every engineer. The booking goes back to confirmed.
          */
         post: operations["unassign_engineer_api_v1_admin_bookings__booking_id__unassign_engineer_post"];
         delete?: never;
@@ -2248,58 +2270,6 @@ export interface paths {
         patch: operations["update_window_api_v1_admin_availability_windows__window_id__patch"];
         trace?: never;
     };
-    "/api/v1/admin/availability/rules": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Rules
-         * @description Which windows are open on each weekday (0 is Monday), with their capacity.
-         */
-        get: operations["list_rules_api_v1_admin_availability_rules_get"];
-        /**
-         * Set Weekly Grid
-         * @description Set the weekly grid: capacity per weekday and window (0 closes it). Returns every rule.
-         */
-        put: operations["set_weekly_grid_api_v1_admin_availability_rules_put"];
-        /**
-         * Create Rule
-         * @description Open a window on a weekday. A second rule for the same weekday and window is rejected.
-         */
-        post: operations["create_rule_api_v1_admin_availability_rules_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/availability/rules/{rule_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Delete Rule
-         * @description Close a window on a weekday. Existing bookings stay.
-         */
-        delete: operations["delete_rule_api_v1_admin_availability_rules__rule_id__delete"];
-        options?: never;
-        head?: never;
-        /**
-         * Update Rule
-         * @description Change a weekday window's capacity or switch it off.
-         */
-        patch: operations["update_rule_api_v1_admin_availability_rules__rule_id__patch"];
-        trace?: never;
-    };
     "/api/v1/admin/availability/blocked-dates": {
         parameters: {
             query?: never;
@@ -2359,70 +2329,6 @@ export interface paths {
          * @description Unblock a date.
          */
         delete: operations["unblock_date_api_v1_admin_availability_blocked_dates__blocked_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/availability/capacity": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Overrides
-         * @description Window capacity overrides (default: the next year).
-         */
-        get: operations["list_overrides_api_v1_admin_availability_capacity_get"];
-        /**
-         * Set Capacity
-         * @description Set how many bookings one window on one date allows (0 closes it).
-         */
-        put: operations["set_capacity_api_v1_admin_availability_capacity_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/availability/capacity/{override_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Delete Capacity
-         * @description Remove an override.
-         */
-        delete: operations["delete_capacity_api_v1_admin_availability_capacity__override_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/availability/preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Preview
-         * @description Return each day's windows with bookings and holds for the next days (default 14).
-         */
-        get: operations["preview_api_v1_admin_availability_preview_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4099,118 +4005,6 @@ export interface paths {
         patch: operations["update_redirect_api_v1_admin_redirects__redirect_id__patch"];
         trace?: never;
     };
-    "/api/v1/admin/reviews": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List Reviews
-         * @description Reviews in display order.
-         */
-        get: operations["list_reviews_api_v1_admin_reviews_get"];
-        put?: never;
-        /**
-         * Create Review
-         * @description Add a review.
-         */
-        post: operations["create_review_api_v1_admin_reviews_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reviews/reorder": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Reorder Reviews
-         * @description Set the display order.
-         */
-        post: operations["reorder_reviews_api_v1_admin_reviews_reorder_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reviews/{review_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Review
-         * @description One review.
-         */
-        get: operations["get_review_api_v1_admin_reviews__review_id__get"];
-        put?: never;
-        post?: never;
-        /**
-         * Delete Review
-         * @description Delete a review.
-         */
-        delete: operations["delete_review_api_v1_admin_reviews__review_id__delete"];
-        options?: never;
-        head?: never;
-        /**
-         * Update Review
-         * @description Change a review (including featured).
-         */
-        patch: operations["update_review_api_v1_admin_reviews__review_id__patch"];
-        trace?: never;
-    };
-    "/api/v1/admin/reviews/{review_id}/publish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Publish Review
-         * @description Show on the website.
-         */
-        post: operations["publish_review_api_v1_admin_reviews__review_id__publish_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reviews/{review_id}/unpublish": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Unpublish Review
-         * @description Hide from the website.
-         */
-        post: operations["unpublish_review_api_v1_admin_reviews__review_id__unpublish_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/seo": {
         parameters: {
             query?: never;
@@ -4436,12 +4230,6 @@ export interface components {
              * @default true
              */
             payment_due: boolean;
-            /**
-             * Override Capacity
-             * @description Owner and admin only: book even if the slot is full.
-             * @default false
-             */
-            override_capacity: boolean;
             /** Internal Notes */
             internal_notes?: string | null;
         };
@@ -4487,7 +4275,11 @@ export interface components {
             property_number?: string | null;
             /** Services */
             services: string[];
-            engineer: components["schemas"]["RefOut"] | null;
+            /**
+             * Engineers
+             * @description Assigned engineers, by name.
+             */
+            engineers: components["schemas"]["RefOut"][];
             area: components["schemas"]["RefOut"] | null;
             /** Total Pence */
             total_pence: number;
@@ -4602,7 +4394,11 @@ export interface components {
             property_number?: string | null;
             /** Services */
             services: string[];
-            engineer: components["schemas"]["RefOut"] | null;
+            /**
+             * Engineers
+             * @description Assigned engineers, by name.
+             */
+            engineers: components["schemas"]["RefOut"][];
             area: components["schemas"]["RefOut"] | null;
             /** Total Pence */
             total_pence: number;
@@ -5260,18 +5056,6 @@ export interface components {
             /** Message */
             message?: string | null;
         };
-        /** ApiResponse[AvailabilityRuleOut] */
-        ApiResponse_AvailabilityRuleOut_: {
-            /**
-             * Success
-             * @default true
-             * @constant
-             */
-            success: true;
-            data: components["schemas"]["AvailabilityRuleOut"];
-            /** Message */
-            message?: string | null;
-        };
         /** ApiResponse[BlockedDateOut] */
         ApiResponse_BlockedDateOut_: {
             /**
@@ -5849,18 +5633,6 @@ export interface components {
             /** Message */
             message?: string | null;
         };
-        /** ApiResponse[ReviewOut] */
-        ApiResponse_ReviewOut_: {
-            /**
-             * Success
-             * @default true
-             * @constant
-             */
-            success: true;
-            data: components["schemas"]["ReviewOut"];
-            /** Message */
-            message?: string | null;
-        };
         /** ApiResponse[SeoResult] */
         ApiResponse_SeoResult_: {
             /**
@@ -5882,18 +5654,6 @@ export interface components {
              */
             success: true;
             data: components["schemas"]["SiteSettingsData"];
-            /** Message */
-            message?: string | null;
-        };
-        /** ApiResponse[SlotCapacityOut] */
-        ApiResponse_SlotCapacityOut_: {
-            /**
-             * Success
-             * @default true
-             * @constant
-             */
-            success: true;
-            data: components["schemas"]["SlotCapacityOut"];
             /** Message */
             message?: string | null;
         };
@@ -6124,19 +5884,6 @@ export interface components {
             success: true;
             /** Data */
             data: components["schemas"]["AttentionItem"][];
-            /** Message */
-            message?: string | null;
-        };
-        /** ApiResponse[list[AvailabilityRuleOut]] */
-        ApiResponse_list_AvailabilityRuleOut__: {
-            /**
-             * Success
-             * @default true
-             * @constant
-             */
-            success: true;
-            /** Data */
-            data: components["schemas"]["AvailabilityRuleOut"][];
             /** Message */
             message?: string | null;
         };
@@ -6452,19 +6199,6 @@ export interface components {
             /** Message */
             message?: string | null;
         };
-        /** ApiResponse[list[SlotCapacityOut]] */
-        ApiResponse_list_SlotCapacityOut__: {
-            /**
-             * Success
-             * @default true
-             * @constant
-             */
-            success: true;
-            /** Data */
-            data: components["schemas"]["SlotCapacityOut"][];
-            /** Message */
-            message?: string | null;
-        };
         /** ApiResponse[list[TeamMemberResponse]] */
         ApiResponse_list_TeamMemberResponse__: {
             /**
@@ -6628,7 +6362,7 @@ export interface components {
         };
         /**
          * AssignEngineerRequest
-         * @description Assign an engineer.
+         * @description Add one engineer to a booking (the others stay).
          */
         AssignEngineerRequest: {
             /**
@@ -6722,59 +6456,6 @@ export interface components {
             created_at: string;
         };
         /**
-         * AvailabilityRuleCreate
-         * @description Open a window on a weekday. Weekday 0 is Monday.
-         */
-        AvailabilityRuleCreate: {
-            /** Weekday */
-            weekday: number;
-            /**
-             * Window Code
-             * @example AM
-             */
-            window_code: string;
-            /**
-             * Capacity
-             * @default 1
-             */
-            capacity: number;
-            /**
-             * Is Active
-             * @default true
-             */
-            is_active: boolean;
-        };
-        /**
-         * AvailabilityRuleOut
-         * @description One window open on one weekday, with its capacity (jobs).
-         */
-        AvailabilityRuleOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Weekday */
-            weekday: number;
-            /** Weekday Name */
-            weekday_name: string;
-            window: components["schemas"]["WindowRef"];
-            /** Capacity */
-            capacity: number;
-            /** Is Active */
-            is_active: boolean;
-        };
-        /**
-         * AvailabilityRuleUpdate
-         * @description Change a weekday window's capacity or switch it off.
-         */
-        AvailabilityRuleUpdate: {
-            /** Capacity */
-            capacity?: number | null;
-            /** Is Active */
-            is_active?: boolean | null;
-        };
-        /**
          * AvailableWindow
          * @description An appointment window on a date. Times carry the Europe/London offset.
          */
@@ -6794,13 +6475,8 @@ export interface components {
             /** End */
             end: string;
             /**
-             * Places Left
-             * @description Jobs that can still be booked in this window.
-             */
-            places_left: number;
-            /**
              * Available
-             * @description False when fully booked or too soon to book online (lead time).
+             * @description False when it has started or is too soon (lead time).
              */
             available: boolean;
         };
@@ -6845,8 +6521,11 @@ export interface components {
             date: string;
             /** Window Code */
             window_code?: string | null;
-            /** Reason */
-            reason?: string | null;
+            /**
+             * Reason
+             * @example Bank holiday
+             */
+            reason: string;
         };
         /**
          * BlockedDateOut
@@ -6884,8 +6563,11 @@ export interface components {
             end_date: string;
             /** Window Code */
             window_code?: string | null;
-            /** Reason */
-            reason?: string | null;
+            /**
+             * Reason
+             * @example Bank holiday
+             */
+            reason: string;
         };
         /**
          * BlogAutosave
@@ -7499,7 +7181,10 @@ export interface components {
             /** End */
             end: string;
             status: components["schemas"]["BookingStatus"];
-            /** Engineer */
+            /**
+             * Engineer
+             * @description Assigned engineers, "Sam Sparks, Ann Volt".
+             */
             engineer: string | null;
             /** Postcode */
             postcode: string;
@@ -7508,8 +7193,8 @@ export interface components {
              * @description AM or PM.
              */
             window_code?: string | null;
-            /** Engineer Id */
-            engineer_id?: string | null;
+            /** Engineer Ids */
+            engineer_ids?: string[];
             /** Service Ids */
             service_ids?: string[];
             /**
@@ -7986,14 +7671,20 @@ export interface components {
             available: boolean;
             /**
              * Windows Left
-             * @description Appointment windows that still have space.
+             * @description Appointment windows that can still be booked.
              */
             windows_left: number;
             /**
-             * Slots Left
-             * @description Same as windows_left (kept for older clients).
+             * Blocked
+             * @description The whole day is blocked.
+             * @default false
              */
-            slots_left: number;
+            blocked: boolean;
+            /**
+             * Blocked Reason
+             * @description Why the day is blocked, shown on the calendar.
+             */
+            blocked_reason?: string | null;
         };
         /**
          * DisputeListItem
@@ -9375,18 +9066,6 @@ export interface components {
             data: components["schemas"]["RenewalItem"][];
             meta: components["schemas"]["PaginationMeta"];
         };
-        /** PaginatedResponse[ReviewOut] */
-        PaginatedResponse_ReviewOut_: {
-            /**
-             * Success
-             * @default true
-             * @constant
-             */
-            success: true;
-            /** Data */
-            data: components["schemas"]["ReviewOut"][];
-            meta: components["schemas"]["PaginationMeta"];
-        };
         /** PaginatedResponse[SeoListItem] */
         PaginatedResponse_SeoListItem_: {
             /**
@@ -9809,7 +9488,7 @@ export interface components {
         };
         /**
          * PreviewDay
-         * @description Generated slots for one date.
+         * @description The windows of one date (none when the whole day is blocked).
          */
         PreviewDay: {
             /**
@@ -9828,7 +9507,7 @@ export interface components {
         };
         /**
          * PreviewSlot
-         * @description A window with its current usage.
+         * @description An appointment window on a date, for the dashboard calendar and booking screens.
          */
         PreviewSlot: {
             /** Code */
@@ -9839,14 +9518,6 @@ export interface components {
             end: string;
             /** Label */
             label: string;
-            /** Capacity */
-            capacity: number;
-            /** Booked */
-            booked: number;
-            /** Held */
-            held: number;
-            /** Places Left */
-            places_left: number;
             /**
              * Bookable Online
              * @description Inside the lead time and horizon window.
@@ -11106,11 +10777,6 @@ export interface components {
              * @example PM
              */
             start: string;
-            /**
-             * Override Capacity
-             * @default false
-             */
-            override_capacity: boolean;
             /** Note */
             note?: string | null;
         };
@@ -11143,98 +10809,11 @@ export interface components {
             count: number;
         };
         /**
-         * ReviewCreate
-         * @description Create a review.
-         */
-        ReviewCreate: {
-            /** Customer Name */
-            customer_name: string;
-            /** Rating */
-            rating: number;
-            /** Body */
-            body?: string | null;
-            /** @default manual */
-            source: components["schemas"]["ReviewSource"];
-            /** Reviewed At */
-            reviewed_at?: string | null;
-            /**
-             * Is Published
-             * @default false
-             */
-            is_published: boolean;
-            /**
-             * Is Featured
-             * @default false
-             */
-            is_featured: boolean;
-            /** Sort Order */
-            sort_order?: number | null;
-            /** Avatar Image Id */
-            avatar_image_id?: string | null;
-        };
-        /**
-         * ReviewOut
-         * @description A review (dashboard).
-         */
-        ReviewOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /** Customer Name */
-            customer_name: string;
-            /** Rating */
-            rating: number;
-            /** Body */
-            body: string | null;
-            source: components["schemas"]["ReviewSource"];
-            /** Reviewed At */
-            reviewed_at: string | null;
-            /** Is Published */
-            is_published: boolean;
-            /** Is Featured */
-            is_featured: boolean;
-            /** Sort Order */
-            sort_order: number;
-            /** Avatar Image Id */
-            avatar_image_id: string | null;
-            avatar: components["schemas"]["ImageRef"] | null;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /**
          * ReviewSource
          * @description Where a customer review came from.
          * @enum {string}
          */
         ReviewSource: "google" | "website" | "trustpilot" | "manual";
-        /**
-         * ReviewUpdate
-         * @description Change a review.
-         */
-        ReviewUpdate: {
-            /** Customer Name */
-            customer_name?: string | null;
-            /** Rating */
-            rating?: number | null;
-            /** Body */
-            body?: string | null;
-            source?: components["schemas"]["ReviewSource"] | null;
-            /** Reviewed At */
-            reviewed_at?: string | null;
-            /** Is Published */
-            is_published?: boolean | null;
-            /** Is Featured */
-            is_featured?: boolean | null;
-            /** Sort Order */
-            sort_order?: number | null;
-            /** Avatar Image Id */
-            avatar_image_id?: string | null;
-        };
         /**
          * RoleDefaults
          * @description The page access a role starts with (the Team page's permission matrix uses this).
@@ -11559,6 +11138,14 @@ export interface components {
             is_active?: boolean | null;
         };
         /**
+         * SetEngineersRequest
+         * @description Set every engineer of a booking. An empty list removes them all.
+         */
+        SetEngineersRequest: {
+            /** Engineer Ids */
+            engineer_ids: string[];
+        };
+        /**
          * SiteSettingsData
          * @description Every settings group.
          */
@@ -11603,43 +11190,6 @@ export interface components {
              * @enum {string}
              */
             type: "home" | "page" | "legal" | "listing" | "category" | "service" | "area" | "area_service" | "blog_post" | "blog_category" | "compliance_hub";
-        };
-        /**
-         * SlotCapacityOut
-         * @description A capacity override for one window on one date.
-         */
-        SlotCapacityOut: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            window: components["schemas"]["WindowRef"];
-            /** Capacity */
-            capacity: number;
-        };
-        /**
-         * SlotCapacityUpsert
-         * @description Set the capacity of one window on one date. 0 closes the window.
-         */
-        SlotCapacityUpsert: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /**
-             * Window Code
-             * @example AM
-             */
-            window_code: string;
-            /** Capacity */
-            capacity: number;
         };
         /**
          * SocialSettings
@@ -12058,31 +11608,8 @@ export interface components {
             by_rate: components["schemas"]["VatRateLine"][];
         };
         /**
-         * WeekdayWindowCapacity
-         * @description Capacity of one window on one weekday in the weekly grid (0 closes it).
-         */
-        WeekdayWindowCapacity: {
-            /** Weekday */
-            weekday: number;
-            /**
-             * Window Code
-             * @example AM
-             */
-            window_code: string;
-            /** Capacity */
-            capacity: number;
-        };
-        /**
-         * WeeklyGridUpdate
-         * @description Set the whole week at once. Pairs left out are unchanged.
-         */
-        WeeklyGridUpdate: {
-            /** Cells */
-            cells: components["schemas"]["WeekdayWindowCapacity"][];
-        };
-        /**
          * WindowRef
-         * @description A window as referenced from rules, blocks and overrides.
+         * @description A window as referenced from blocked dates.
          */
         WindowRef: {
             /**
@@ -18398,6 +17925,77 @@ export interface operations {
             };
         };
     };
+    set_engineers_api_v1_admin_bookings__booking_id__engineers_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetEngineersRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiResponse_AdminBookingDetail_"];
+                };
+            };
+            /** @description Not authenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description No access to the bookings pages. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Invalid status change or slot full. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     assign_engineer_api_v1_admin_bookings__booking_id__assign_engineer_post: {
         parameters: {
             query?: never;
@@ -19655,293 +19253,6 @@ export interface operations {
             };
         };
     };
-    list_rules_api_v1_admin_availability_rules_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_list_AvailabilityRuleOut__"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    set_weekly_grid_api_v1_admin_availability_rules_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WeeklyGridUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_list_AvailabilityRuleOut__"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_rule_api_v1_admin_availability_rules_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AvailabilityRuleCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_AvailabilityRuleOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_rule_api_v1_admin_availability_rules__rule_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                rule_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_rule_api_v1_admin_availability_rules__rule_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                rule_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AvailabilityRuleUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_AvailabilityRuleOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     list_blocked_api_v1_admin_availability_blocked_dates_get: {
         parameters: {
             query?: {
@@ -20139,242 +19450,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiResponse_NoneType_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_overrides_api_v1_admin_availability_capacity_get: {
-        parameters: {
-            query?: {
-                from?: string | null;
-                to?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_list_SlotCapacityOut__"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    set_capacity_api_v1_admin_availability_capacity_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SlotCapacityUpsert"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_SlotCapacityOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_capacity_api_v1_admin_availability_capacity__override_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                override_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the availability page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    preview_api_v1_admin_availability_preview_get: {
-        parameters: {
-            query?: {
-                days?: number;
-                service_ids?: string[] | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_list_PreviewDay__"];
                 };
             };
             /** @description Not authenticated. */
@@ -25761,484 +24836,6 @@ export interface operations {
                 };
             };
             /** @description No access to the seo page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_reviews_api_v1_admin_reviews_get: {
-        parameters: {
-            query?: {
-                is_published?: boolean | null;
-                is_featured?: boolean | null;
-                rating?: number | null;
-                /** @description 1 based page number. */
-                page?: number;
-                /** @description Items per page. */
-                page_size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedResponse_ReviewOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_review_api_v1_admin_reviews_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReviewCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_ReviewOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reorder_reviews_api_v1_admin_reviews_reorder_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReorderRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_review_api_v1_admin_reviews__review_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                review_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_ReviewOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_review_api_v1_admin_reviews__review_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                review_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_NoneType_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_review_api_v1_admin_reviews__review_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                review_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReviewUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_ReviewOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    publish_review_api_v1_admin_reviews__review_id__publish_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                review_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_ReviewOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    unpublish_review_api_v1_admin_reviews__review_id__unpublish_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                review_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiResponse_ReviewOut_"];
-                };
-            };
-            /** @description Not authenticated. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description No access to the reviews page. */
             403: {
                 headers: {
                     [name: string]: unknown;

@@ -71,8 +71,10 @@ describe("bookingErrorMessage", () => {
     );
   });
 
-  it("explains a full window", () => {
-    const error = new ApiError(409, "SLOT_UNAVAILABLE", "Full");
-    expect(bookingErrorMessage(error)).toMatch(/no places left/);
+  it("explains a window that can no longer be booked", () => {
+    const error = new ApiError(409, "SLOT_UNAVAILABLE", "Unavailable");
+    expect(bookingErrorMessage(error)).toMatch(/can no longer be booked/);
+    const blocked = new ApiError(400, "INVALID_SLOT", "Blocked");
+    expect(bookingErrorMessage(blocked)).toMatch(/blocked/);
   });
 });
