@@ -30,14 +30,13 @@ function nextMonth(date: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-test("month view: navigation, places left and today's booking", async () => {
+test("month view: navigation and today's booking", async () => {
   const today = londonDate();
   await page.goto("/bookings/calendar");
   const title = page.getByTestId("calendar-title");
   await expect(title).toHaveText(monthLabel(today));
   const grid = page.getByTestId("calendar-grid");
   await expect(grid.getByTestId("calendar-chip").first()).toBeVisible();
-  await expect(grid.getByTestId("places-left").first()).toBeVisible();
   await expectAccessible(page);
 
   await page.getByRole("button", { name: "Next month" }).click();

@@ -29,9 +29,11 @@ export function AppointmentPanel({
           { label: "Date", value: a.date ? formatDate(a.date, "weekday") : "Not set" },
           { label: "Window", value: a.label ?? "Not set" },
           {
-            label: "Engineer",
-            value: booking.engineer ? (
-              <span data-testid="assigned-engineer">{booking.engineer.name}</span>
+            label: booking.engineers.length > 1 ? "Engineers" : "Engineer",
+            value: booking.engineers.length ? (
+              <span data-testid="assigned-engineer">
+                {booking.engineers.map((e) => e.name).join(", ")}
+              </span>
             ) : (
               <span className="text-text-muted" data-testid="assigned-engineer">
                 Not assigned

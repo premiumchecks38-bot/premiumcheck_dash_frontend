@@ -20,10 +20,10 @@ export function bookingErrorMessage(error: unknown, allowed: readonly string[] =
         : `A booking that is ${from} cannot be changed any more.`;
     }
     if (error.code === "SLOT_UNAVAILABLE") {
-      return "That window has no places left. Choose another window, or override capacity if you are an owner or admin.";
+      return "That window can no longer be booked. Choose another date or window.";
     }
     if (error.code === "INVALID_SLOT") {
-      return "That date and window cannot be booked (closed, in the past or outside opening hours).";
+      return "That date or window is blocked. Choose another date, or unblock it on the Availability page.";
     }
   }
   return errorMessage(error);

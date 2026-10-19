@@ -98,8 +98,8 @@ function columns(): ColumnDef<BookingListItem>[] {
       header: "Engineer",
       enableSorting: false,
       cell: ({ row }) =>
-        row.original.engineer ? (
-          row.original.engineer.name
+        row.original.engineers.length ? (
+          row.original.engineers.map((e) => e.name).join(", ")
         ) : (
           <span className="text-text-muted">Unassigned</span>
         ),
@@ -168,7 +168,7 @@ function exportRows(rows: BookingListItem[]): string {
       b.postcode,
       b.property_number ?? "",
       b.services.join("; "),
-      b.engineer?.name ?? "",
+      b.engineers.map((e) => e.name).join("; "),
       BOOKING_STATUS_LABELS[b.status] ?? b.status,
       PAYMENT_STATE_LABELS[paymentState(b)],
       formatMoney(b.total_pence),
@@ -262,7 +262,7 @@ export function BookingsList({
     }
     setAssigning(false);
     if (done)
-      toast.success(`Engineer assigned to ${String(done)} ${done === 1 ? "booking" : "bookings"}.`);
+      toast.success(`Engineer added to ${String(done)} ${done === 1 ? "booking" : "bookings"}.`);
     if (failed.length) toast.error(`Not assigned: ${failed.join("; ")}`);
     setSelected({});
     await queryClient.invalidateQueries({ queryKey: ["bookings"] });
