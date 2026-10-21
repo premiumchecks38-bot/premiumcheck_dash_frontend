@@ -11,7 +11,7 @@ export default function PastBookingsPage() {
     <>
       <PageHeader
         title="Past bookings"
-        description="Completed, cancelled, refunded and missed appointments, and certificates due for renewal."
+        description="Every booking whose appointment date has passed, and certificates due for renewal."
         breadcrumbs={[{ label: "Dashboard", href: "/" }, { label: "Bookings" }, { label: "Past" }]}
       />
       <Suspense>

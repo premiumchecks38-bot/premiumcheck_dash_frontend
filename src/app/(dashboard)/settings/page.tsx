@@ -320,23 +320,14 @@ export default function SettingsPage() {
               disabled={!canEdit}
             />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <TextField
-                label="Customer support email"
-                value={formData.company.email}
-                onChange={(val) => updateGroup("company", { email: val })}
-                placeholder="info@premiumchecks.co.uk"
-                disabled={!canEdit}
-              />
-
-              <TextField
-                label="Telephone"
-                value={formData.company.phone}
-                onChange={(val) => updateGroup("company", { phone: val })}
-                placeholder="020 1234 5678"
-                disabled={!canEdit}
-              />
-            </div>
+            {/* The website's phone number is set in code (BUSINESS_PHONE), not here. */}
+            <TextField
+              label="Customer support email"
+              value={formData.company.email}
+              onChange={(val) => updateGroup("company", { email: val })}
+              placeholder="info@premiumchecks.co.uk"
+              disabled={!canEdit}
+            />
 
             <TextField
               label="Opening hours summary"
