@@ -4830,6 +4830,19 @@ export interface components {
          */
         AdminRole: "owner" | "admin" | "manager" | "editor";
         /**
+         * AdminServiceAreaRef
+         * @description An area a service is offered in.
+         */
+        AdminServiceAreaRef: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /**
          * AdminServiceDetail
          * @description A service with content and every price option.
          */
@@ -4854,6 +4867,11 @@ export interface components {
             allow_pay_later: boolean;
             /** Is Commercial */
             is_commercial: boolean;
+            /**
+             * All Areas
+             * @description True: offered in every area. False: only in `areas`.
+             */
+            all_areas: boolean;
             /** Sort Order */
             sort_order: number;
             /** Duration Minutes */
@@ -4889,6 +4907,11 @@ export interface components {
             hero_image: components["schemas"]["AdminImageRef"] | null;
             /** Price Options */
             price_options: components["schemas"]["AdminPriceOption"][];
+            /**
+             * Areas
+             * @description Areas the service is offered in when all_areas is false (and their sub areas).
+             */
+            areas: components["schemas"]["AdminServiceAreaRef"][];
         };
         /**
          * AdminServiceSummary
@@ -4915,6 +4938,11 @@ export interface components {
             allow_pay_later: boolean;
             /** Is Commercial */
             is_commercial: boolean;
+            /**
+             * All Areas
+             * @description True: offered in every area. False: only in `areas`.
+             */
+            all_areas: boolean;
             /** Sort Order */
             sort_order: number;
             /** Duration Minutes */
@@ -6482,7 +6510,7 @@ export interface components {
         };
         /**
          * BillingAddressIn
-         * @description Billing address. The country is always United Kingdom.
+         * @description Billing address, in any country.
          */
         BillingAddressIn: {
             /** Address Line1 */
@@ -11098,6 +11126,16 @@ export interface components {
              * @default true
              */
             is_active: boolean;
+            /**
+             * All Areas
+             * @default true
+             */
+            all_areas: boolean;
+            /**
+             * Area Ids
+             * @description Areas the service is offered in. Required when all_areas is false.
+             */
+            area_ids?: string[];
         };
         /**
          * ServiceUpdate
@@ -11136,6 +11174,10 @@ export interface components {
             is_featured?: boolean | null;
             /** Is Active */
             is_active?: boolean | null;
+            /** All Areas */
+            all_areas?: boolean | null;
+            /** Area Ids */
+            area_ids?: string[] | null;
         };
         /**
          * SetEngineersRequest

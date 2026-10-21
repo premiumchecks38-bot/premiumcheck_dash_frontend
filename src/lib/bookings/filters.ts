@@ -24,15 +24,8 @@ export const UPCOMING_STATUSES: readonly BookingStatus[] = [
   "scheduled",
   "in_progress",
 ];
-export const PAST_STATUSES: readonly BookingStatus[] = [
-  "completed",
-  "cancelled",
-  "refunded",
-  "no_show",
-  "confirmed",
-  "scheduled",
-  "pending_payment",
-];
+/** Past bookings are every booking whose date has gone, so any status can appear. */
+export const PAST_STATUSES: readonly BookingStatus[] = BOOKING_STATUSES;
 
 export const PAYMENT_FILTERS = ["paid", "payment_due", "pending_payment"] as const;
 export type PaymentFilter = (typeof PAYMENT_FILTERS)[number];

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Category, ServiceDetail, ServiceSummary } from "@/lib/api/schemas";
+import type { Area, Category, ServiceDetail, ServiceSummary } from "@/lib/api/schemas";
 import { admin } from "@/lib/client/api";
 import { cleanDeep } from "@/lib/text/clean";
 import { PriceOptionsEditor } from "./price-options-editor";
@@ -39,6 +39,26 @@ interface ServiceFormState {
   is_commercial: boolean;
   is_active: boolean;
   is_featured: boolean;
+  all_areas: boolean;
+  area_ids: string[];
+}
+
+/** Areas in tree order (parents first, children indented under them). */
+function orderedAreas(areas: Area[]): { area: Area; depth: number }[] {
+  const byParent = new Map<string | null, Area[]>();
+  for (const area of areas) {
+    const key = areas.some((a) => a.id === area.parent_id) ? area.parent_id ?? null : null;
+    byParent.set(key, [...(byParent.get(key) ?? []), area]);
+  }
+  const out: { area: Area; depth: number }[] = [];
+  const walk = (parent: string | null, depth: number) => {
+    for (const area of byParent.get(parent) ?? []) {
+      out.push({ area, depth });
+      walk(area.id, depth + 1);
+    }
+  };
+  walk(null, 0);
+  return out;
 }
 
 export function ServiceDialog({
@@ -70,6 +90,12 @@ export function ServiceDialog({
 
   const detail = detailQuery.data;
 
+  const areasQuery = useQuery({
+    queryKey: ["admin", "areas"],
+    queryFn: () => admin<Area[]>("/admin/areas"),
+  });
+  const areaRows = React.useMemo(() => orderedAreas(areasQuery.data ?? []), [areasQuery.data]);
+
   const [form, setForm] = React.useState<ServiceFormState>({
     name: initialService?.name ?? "",
     category_id: initialService?.category?.id ?? "",
@@ -82,6 +108,8 @@ export function ServiceDialog({
     is_commercial: initialService?.is_commercial ?? false,
     is_active: initialService?.is_active ?? true,
     is_featured: initialService?.is_featured ?? false,
+    all_areas: initialService?.all_areas ?? true,
+    area_ids: [],
   });
 
   // When detailed service data loads, populate any missing fields
@@ -100,6 +128,8 @@ export function ServiceDialog({
         is_commercial: detail.is_commercial ?? prev.is_commercial,
         is_active: detail.is_active ?? prev.is_active,
         is_featured: detail.is_featured ?? prev.is_featured,
+        all_areas: detail.all_areas,
+        area_ids: detail.areas.map((a) => a.id),
       }));
     }
   }, [detail]);
@@ -124,6 +154,10 @@ export function ServiceDialog({
       save.setFieldErrors({ duration_minutes: "Duration must be at least 1 minute" });
       return;
     }
+    if (!form.all_areas && form.area_ids.length === 0) {
+      save.setFieldErrors({ area_ids: "Choose at least one area, or tick All areas" });
+      return;
+    }
 
     const payload = cleanDeep({
       name: form.name.trim(),
@@ -137,6 +171,8 @@ export function ServiceDialog({
       is_commercial: form.is_commercial,
       is_active: form.is_active,
       is_featured: form.is_featured,
+      all_areas: form.all_areas,
+      area_ids: form.all_areas ? [] : form.area_ids,
     });
 
     const result = await save.run(
@@ -210,6 +246,7 @@ export function ServiceDialog({
                 setForm={setForm}
                 save={save}
                 categoryOptions={categoryOptions}
+                areaRows={areaRows}
                 savedSlug={detail?.slug ?? currentService?.slug ?? null}
                 isEditing={isEditing}
               />
@@ -223,6 +260,7 @@ export function ServiceDialog({
             setForm={setForm}
             save={save}
             categoryOptions={categoryOptions}
+            areaRows={areaRows}
             savedSlug={null}
             isEditing={false}
           />
@@ -256,6 +294,7 @@ function DetailsForm({
   setForm,
   save,
   categoryOptions,
+  areaRows,
   savedSlug,
   isEditing,
 }: {
@@ -263,6 +302,7 @@ function DetailsForm({
   setForm: React.Dispatch<React.SetStateAction<ServiceFormState>>;
   save: ReturnType<typeof useSave>;
   categoryOptions: { value: string; label: string }[];
+  areaRows: { area: Area; depth: number }[];
   savedSlug: string | null;
   isEditing: boolean;
 }) {
@@ -369,6 +409,51 @@ function DetailsForm({
           onChange={(is_featured) => setForm((prev) => ({ ...prev, is_featured }))}
         />
       </div>
+
+      <fieldset className="space-y-3 rounded-md border border-border p-4">
+        <legend className="px-1 font-heading text-small font-semibold text-text">Areas</legend>
+        <CheckField
+          id="service-all-areas"
+          label="All areas"
+          hint="Offered everywhere we work. Untick to choose specific areas; a parent area includes its sub areas."
+          checked={form.all_areas}
+          onChange={(all_areas) => setForm((prev) => ({ ...prev, all_areas }))}
+        />
+        {!form.all_areas ? (
+          <div className="space-y-2 border-t border-border pt-3">
+            {areaRows.length === 0 ? (
+              <p className="font-body text-caption text-text-muted">
+                No areas yet. Add them on the Areas page.
+              </p>
+            ) : (
+              <div className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
+                {areaRows.map(({ area, depth }) => (
+                  <div key={area.id} style={{ paddingLeft: `${depth * 1.25}rem` }}>
+                    <CheckField
+                      id={`service-area-${area.id}`}
+                      label={area.is_active ? area.name : `${area.name} (inactive)`}
+                      checked={form.area_ids.includes(area.id)}
+                      onChange={(checked) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          area_ids: checked
+                            ? [...prev.area_ids, area.id]
+                            : prev.area_ids.filter((id) => id !== area.id),
+                        }))
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            {save.fieldErrors.area_ids ? (
+              <p className="font-body text-caption text-error-text" role="alert">
+                {save.fieldErrors.area_ids}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </fieldset>
     </div>
   );
 }
